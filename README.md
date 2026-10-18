@@ -40,12 +40,6 @@ Stammen die Daten von einem Server mit `online-mode=true`, Nucleus läuft aber m
 Spieler dort andere UUIDs. Dann `/nucleus import essentials offline` benutzen: die UUIDs werden über den
 Spielernamen umgerechnet.
 
-### Vom TagPlugin (TagMC) umsteigen
-
-Bei aktivem `chat`-Modul übernimmt `/nucleus import tagplugin` aus `plugins/TagPlugin` alle Tags, vergebene Tags
-und die Formate für Chat und Tab-Liste. Danach das TagPlugin entfernen, damit `/tag`, Chat und Tab-Liste nur
-noch von Nucleus kommen.
-
 ### VaultUnlocked
 
 Ist [VaultUnlocked](https://modrinth.com/project/vaultunlocked) installiert, meldet sich Nucleus automatisch als
