@@ -34,6 +34,8 @@ public final class PlayerData {
     private final Set<UUID> ignored = ConcurrentHashMap.newKeySet();
     private boolean socialSpy;
     private @Nullable String nick;
+    /** Tag-ID (chat-Modul), null = kein Tag. volatile: der Chat liest asynchron. */
+    private volatile @Nullable String tag;
     private final List<Mail> mails = new ArrayList<>();
     private long playtimeTicks;
     /** Mute bis (Epoch-Millis), 0 = nicht gemutet, Long.MAX_VALUE = dauerhaft. volatile: Chat liest asynchron. */
@@ -208,6 +210,15 @@ public final class PlayerData {
 
     public void nick(@Nullable String miniMessage) {
         nick = miniMessage;
+        markDirty();
+    }
+
+    public @Nullable String tag() {
+        return tag;
+    }
+
+    public void tag(@Nullable String id) {
+        tag = id;
         markDirty();
     }
 
@@ -402,6 +413,7 @@ public final class PlayerData {
         yaml.set("ignored", ignored.stream().map(UUID::toString).toList());
         yaml.set("social-spy", socialSpy);
         yaml.set("nick", nick);
+        yaml.set("tag", tag);
         List<Map<String, Object>> mailList = new ArrayList<>();
         for (Mail m : mails) {
             Map<String, Object> map = new HashMap<>();
@@ -466,6 +478,7 @@ public final class PlayerData {
         }
         d.socialSpy = yaml.getBoolean("social-spy");
         d.nick = yaml.getString("nick");
+        d.tag = yaml.getString("tag");
         for (Map<?, ?> map : yaml.getMapList("mails")) {
             d.mails.add(new Mail(String.valueOf(map.get("from")),
                     map.get("time") instanceof Number n ? n.longValue() : 0L,

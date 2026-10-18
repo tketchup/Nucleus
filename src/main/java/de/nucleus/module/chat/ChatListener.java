@@ -58,17 +58,23 @@ final class ChatListener implements Listener {
         }
 
         // Farben/Formatierung im Chat nur mit Permission (nucleus.chat.color/.hex/.format/.minimessage)
-        if (UserText.mayFormat(sender, "nucleus.chat")) {
+        // colors-for-everyone: Farben, Hex und Formatierung für alle (MiniMessage-Extras weiter nur per Recht)
+        if (s.colorsForEveryone()) {
+            event.message(UserText.parse(plain, true, true, true, sender.hasPermission("nucleus.chat.minimessage")));
+        } else if (UserText.mayFormat(sender, "nucleus.chat")) {
             event.message(UserText.parse(plain, sender, "nucleus.chat"));
         }
 
         // Wer den Absender ignoriert, sieht die Nachricht nicht
         event.viewers().removeIf(viewer -> viewer instanceof Player p && ignores(p, sender));
 
-        String format = s.format();
+        // Eigenes Format ohne Tag, damit keine leeren Klammern oder doppelten Leerzeichen entstehen
+        Component tag = module.tagOf(sender);
+        String format = tag != null ? s.format() : s.formatNoTag();
+        Component tagComponent = tag != null ? tag : Component.empty();
         event.renderer(ChatRenderer.viewerUnaware((source, displayName, message) ->
-                plugin.messages().parse(format, "display_name", displayName, "player", source.getName(),
-                        "world", source.getWorld().getName(), "message", message)));
+                plugin.messages().parse(format, "tag", tagComponent, "display_name", displayName,
+                        "player", source.getName(), "world", source.getWorld().getName(), "message", message)));
     }
 
     /** @return false, wenn die Nachricht blockiert wird (Meldung an den Spieler inklusive) */

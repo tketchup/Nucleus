@@ -3,8 +3,28 @@
 #  An/aus in config.yml unter modules. Änderungen: /nucleus reload
 # ─────────────────────────────────────────────────────────────
 
-# Chat-Format (MiniMessage). Platzhalter: <display_name>, <player>, <world>, <message>
-format: '<display_name> <dark_gray>»</dark_gray> <gray><message>'
+# Chat-Format (MiniMessage). Platzhalter: <tag>, <display_name> (Nick), <player>, <world>, <message>
+format: '<tag> <white><display_name> <gray>»</gray> <message>'
+# Für Spieler ohne Tag (keine leeren Klammern, keine doppelten Leerzeichen)
+format-no-tag: '<white><display_name> <gray>»</gray> <message>'
+# Farbcodes (&a, &l, &#RRGGBB) für alle Spieler. false = nur mit nucleus.chat.color / .format / .hex
+colors-for-everyone: false
+
+# Tab-Liste gestalten (Tag vor dem Namen, AFK-Marker). false, wenn ein anderes Plugin sie verwaltet.
+tablist:
+  enabled: true
+  # Platzhalter: <tag>, <player>, <display_name> (Nick)
+  format: '<tag> <white><player>'
+  format-no-tag: '<white><player>'
+
+# Status-Tags wie [GHG] oder «Queen» (Befehl /tag)
+tags:
+  # Spieler dürfen sich mit /tag select selbst einen Tag wählen (wählbare Tags oder nucleus.tag.<id>)
+  self-select: false
+  # Höchstlänge des Tag-Textes und je Klammer
+  max-length: 16
+  max-bracket-length: 3
+
 # /me. Platzhalter: <display_name>, <player>, <message>
 me-format: '<gray>* <display_name> <message>'
 # /broadcast. Platzhalter: <message>
@@ -30,8 +50,6 @@ nick:
   allowed-pattern: '[A-Za-z0-9_]+'
   # Wird vor jeden Nick gesetzt, damit man Nicks erkennt ('' = nichts)
   prefix: '~'
-  # Nick auch in der Tab-Liste anzeigen
-  show-in-tablist: false
 mail:
   # Höchstzahl Mails pro Postfach, älteste werden verworfen
   max-per-player: 50

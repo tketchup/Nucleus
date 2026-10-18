@@ -59,8 +59,12 @@ public final class AfkService {
             lastActivity.put(id, System.currentTimeMillis());
         }
 
-        // Tab-Liste nur anfassen, wenn erlaubt (sonst gehört sie z. B. TagMC)
-        if (s.tablistMarker() || plugin.modules().isActive("chat")) {
+        // Gestaltet das chat-Modul die Tab-Liste, baut es den Namen samt AFK-Marker selbst auf.
+        // Sonst nur mit tablist-marker anfassen (die Tab-Liste kann einem anderen Plugin gehören).
+        var chat = plugin.modules().get("chat", de.nucleus.module.chat.ChatModule.class);
+        if (chat != null && chat.tablistEnabled()) {
+            chat.refreshTab(player);
+        } else if (s.tablistMarker()) {
             if (value) {
                 savedListNames.put(id, player.playerListName());
                 player.playerListName(player.playerListName().append(plugin.messages().get("afk.tablist-suffix")));
@@ -126,5 +130,9 @@ public final class AfkService {
         afk.clear();
         lastActivity.clear();
         savedListNames.clear();
+        var chat = plugin.modules().get("chat", de.nucleus.module.chat.ChatModule.class);
+        if (chat != null && chat.tablistEnabled()) {
+            Bukkit.getOnlinePlayers().forEach(chat::refreshTab);
+        }
     }
 }

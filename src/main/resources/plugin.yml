@@ -284,3 +284,12 @@ permissions:
   nucleus.lock.admin:
     description: Fremde Sperren verwalten und aufheben
     default: op
+
+  # ── Tags (chat-Modul) ──
+  nucleus.tag.admin:
+    description: Tags erstellen, ändern und an Spieler vergeben
+    default: op
+  nucleus.tag.select:
+    description: Sich selbst einen Tag wählen (wenn tags.self-select an ist)
+    default: true
+  # nucleus.tag.<id> erlaubt einen bestimmten Tag auch ohne "selectable" (wird dynamisch geprüft)

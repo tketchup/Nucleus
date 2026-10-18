@@ -57,7 +57,11 @@ public final class CoreCommands {
                 .then(CommandKit.sub("offline", null)
                         .executes(kit.run(ctx -> runImport(ctx, true, null)))
                         .then(CommandKit.greedy("folder").executes(kit.run(ctx -> runImport(ctx, true, CommandKit.arg(ctx, "folder"))))))
-                .then(CommandKit.greedy("folder").executes(kit.run(ctx -> runImport(ctx, false, CommandKit.arg(ctx, "folder")))))));
+                .then(CommandKit.greedy("folder").executes(kit.run(ctx -> runImport(ctx, false, CommandKit.arg(ctx, "folder"))))))
+                // /nucleus import tagplugin: Tags, Zuweisungen und Formate aus TagMC
+                .then(CommandKit.sub("tagplugin", null).executes(kit.run(ctx ->
+                        new de.nucleus.importer.TagPluginImporter(plugin).run(sender(ctx),
+                                new de.nucleus.importer.TagPluginImporter(plugin).defaultFolder())))));
         CommandKit.register(registrar, root, "Nucleus: Info, Neuladen und Modulstatus", "nuc");
     }
 

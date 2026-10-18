@@ -28,8 +28,8 @@ afk:
   auto-afk-minutes: 5
   # AFK-Spieler nach so vielen Minuten Inaktivität kicken (0 = aus). Ausnahme: nucleus.afk.kickexempt
   kick-after-minutes: 0
-  # AFK in der Tab-Liste markieren. Ist das chat-Modul aktiv, wird immer markiert.
-  # Bewusst aus, damit z. B. TagMC die Tab-Liste allein verwaltet.
+  # AFK in der Tab-Liste markieren. Gestaltet das chat-Modul die Tab-Liste (tablist.enabled),
+  # wird immer markiert. Sonst bewusst aus, damit ein anderes Plugin die Tab-Liste allein verwaltet.
   tablist-marker: false
   # AFK-Spieler zählen beim Schlafen nicht mit (Nacht wird ohne sie übersprungen)
   ignore-sleep: true

@@ -35,10 +35,12 @@ public final class UserText {
 
     /** Thread-sicher (auch im asynchronen Chat nutzbar). */
     public static Component parse(String input, Permissible who, String permissionPrefix) {
-        boolean color = who.hasPermission(permissionPrefix + ".color");
-        boolean hex = who.hasPermission(permissionPrefix + ".hex");
-        boolean format = who.hasPermission(permissionPrefix + ".format");
-        boolean mini = who.hasPermission(permissionPrefix + ".minimessage");
+        return parse(input, who.hasPermission(permissionPrefix + ".color"), who.hasPermission(permissionPrefix + ".hex"),
+                who.hasPermission(permissionPrefix + ".format"), who.hasPermission(permissionPrefix + ".minimessage"));
+    }
+
+    /** Wie oben, aber mit festen Erlaubnissen (z. B. "Farbcodes für alle" im Chat). */
+    public static Component parse(String input, boolean color, boolean hex, boolean format, boolean mini) {
         if (!color && !hex && !format && !mini) {
             return Component.text(input);
         }

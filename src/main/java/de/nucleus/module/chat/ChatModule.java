@@ -29,16 +29,19 @@ public final class ChatModule implements Module {
     static final UUID CONSOLE = new UUID(0, 0);
 
     /** Einstellungen aus config.yml (volatile, weil der Chat asynchron liest). */
-    record Settings(String format, String meFormat, String broadcastFormat,
+    record Settings(String format, String formatNoTag, String meFormat, String broadcastFormat,
                     String joinMessage, String firstJoinMessage, String quitMessage,
                     int nickMinLength, int nickMaxLength, Pattern nickPattern, String nickPrefix,
-                    boolean nickInTablist, int maxMails,
+                    boolean tablistEnabled, String tablistFormat, String tablistFormatNoTag,
+                    boolean colorsForEveryone, boolean tagSelfSelect, int tagMaxLength, int tagMaxBracket,
+                    int maxMails,
                     long cooldownMillis, boolean blockRepeat, long repeatWindowMillis,
                     int spamMaxMessages, long spamWindowMillis) {
 
         static Settings load(FileConfiguration c) {
             return new Settings(
                     Configs.string(c, "format"),
+                    Configs.string(c, "format-no-tag"),
                     Configs.string(c, "me-format"),
                     Configs.string(c, "broadcast-format"),
                     Configs.string(c, "join-message"),
@@ -48,7 +51,13 @@ public final class ChatModule implements Module {
                     Math.max(1, c.getInt("nick.max-length")),
                     Pattern.compile(Configs.string(c, "nick.allowed-pattern")),
                     Configs.string(c, "nick.prefix"),
-                    c.getBoolean("nick.show-in-tablist"),
+                    c.getBoolean("tablist.enabled"),
+                    Configs.string(c, "tablist.format"),
+                    Configs.string(c, "tablist.format-no-tag"),
+                    c.getBoolean("colors-for-everyone"),
+                    c.getBoolean("tags.self-select"),
+                    Math.max(1, c.getInt("tags.max-length")),
+                    Math.max(0, c.getInt("tags.max-bracket-length")),
                     Math.max(1, c.getInt("mail.max-per-player")),
                     Math.max(0, c.getLong("cooldown-seconds")) * 1000L,
                     c.getBoolean("spam.block-repeat"),
@@ -61,6 +70,7 @@ public final class ChatModule implements Module {
     private final NucleusPlugin plugin;
     private final ModuleScope scope;
     private final NickIndex nicks;
+    private final TagStore tags;
     /** Letzter Gesprächspartner für /reply (beide Richtungen). */
     private final Map<UUID, UUID> replyTargets = new ConcurrentHashMap<>();
     private volatile Settings settings;
@@ -69,6 +79,7 @@ public final class ChatModule implements Module {
         this.plugin = plugin;
         this.scope = new ModuleScope(plugin);
         this.nicks = new NickIndex(plugin);
+        this.tags = new TagStore(plugin);
     }
 
     @Override
@@ -76,8 +87,9 @@ public final class ChatModule implements Module {
         settings = Settings.load(plugin.config("chat"));
         nicks.load();
         scope.listen(new ChatListener(plugin, this));
-        // Nicknames von Spielern, die schon online sind
+        // Nicknames von Spielern, die schon online sind; Tab-Liste, sobald die Tags geladen sind
         Bukkit.getOnlinePlayers().forEach(this::applyNick);
+        tags.load(this::refreshAllTabs);
     }
 
     @Override
@@ -87,7 +99,7 @@ public final class ChatModule implements Module {
         // Anzeigenamen zurücksetzen, damit ein abgeschaltetes Modul keine Spuren hinterlässt
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.displayName(null);
-            if (settings != null && settings.nickInTablist()) {
+            if (settings != null && settings.tablistEnabled()) {
                 p.playerListName(null);
             }
         }
@@ -100,6 +112,7 @@ public final class ChatModule implements Module {
         new NickCommands(plugin, this, kit).register(registrar);
         new AnnounceCommands(plugin, this, kit).register(registrar);
         new MailCommands(plugin, this, kit).register(registrar);
+        new TagCommands(plugin, this, kit).register(registrar);
     }
 
     Settings settings() {
@@ -108,6 +121,64 @@ public final class ChatModule implements Module {
 
     NickIndex nicks() {
         return nicks;
+    }
+
+    public TagStore tags() {
+        return tags;
+    }
+
+    // --- Tags und Tab-Liste ---
+
+    /** Gerenderter Tag eines Spielers oder null. Thread-sicher (Chat). */
+    @Nullable Component tagOf(Player player) {
+        PlayerData data = plugin.playerData().getIfLoaded(player.getUniqueId());
+        return data == null ? null : tags.component(data.tag());
+    }
+
+    /** Ob Nucleus die Tab-Liste gestaltet (dann gehört der AFK-Marker hierher). */
+    public boolean tablistEnabled() {
+        return settings != null && settings.tablistEnabled();
+    }
+
+    /** Tab-Listen-Name neu setzen: Format mit Tag, Anzeigename (Nick) und ggf. AFK-Marker. Hauptthread. */
+    public void refreshTab(Player player) {
+        if (!tablistEnabled()) {
+            return;
+        }
+        Component tag = tagOf(player);
+        Component name = plugin.messages().parse(tag != null ? settings.tablistFormat() : settings.tablistFormatNoTag(),
+                "tag", tag != null ? tag : Component.empty(), "player", player.getName(),
+                "display_name", player.displayName());
+        var info = plugin.modules().get("info", de.nucleus.module.info.InfoModule.class);
+        if (info != null && info.afk().isAfk(player)) {
+            name = name.append(plugin.messages().get("afk.tablist-suffix"));
+        }
+        player.playerListName(name);
+    }
+
+    void refreshAllTabs() {
+        Bukkit.getOnlinePlayers().forEach(this::refreshTab);
+    }
+
+    /** Nach Änderungen an chat.yml im Spiel (z. B. Import): Einstellungen neu, Tab-Liste auffrischen. */
+    @Override
+    public void reloadSettings() {
+        boolean hadTablist = tablistEnabled();
+        settings = Settings.load(plugin.config("chat"));
+        if (hadTablist && !tablistEnabled()) {
+            Bukkit.getOnlinePlayers().forEach(p -> p.playerListName(null));
+        }
+        refreshAllTabs();
+    }
+
+    /** Für den TagPlugin-Import: Tag aus einem YAML-Abschnitt übernehmen. */
+    public boolean importTag(String id, org.bukkit.configuration.@Nullable ConfigurationSection section) {
+        TagStore.Tag tag = TagStore.read(id, section);
+        if (tag == null || !id.matches("[a-z0-9_-]{1,24}")) {
+            return false;
+        }
+        tags.put(tag);
+        return true;
     }
 
     // --- /reply ---
@@ -146,8 +217,6 @@ public final class ChatModule implements Module {
         Component display = nick == null ? null
                 : Component.text(settings.nickPrefix()).append(MiniMessage.miniMessage().deserialize(nick));
         player.displayName(display);
-        if (settings.nickInTablist()) {
-            player.playerListName(display);
-        }
+        refreshTab(player);
     }
 }
