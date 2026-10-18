@@ -19,4 +19,8 @@ public interface Module {
      * und bei jedem Neuladen der Datapacks (/minecraft:reload).
      */
     void registerCommands(Commands registrar);
+
+    /** Einstellungen neu einlesen, ohne Listener neu zu starten (z. B. nach Änderungen im Spiel). */
+    default void reloadSettings() {
+    }
 }

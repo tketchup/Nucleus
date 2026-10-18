@@ -108,6 +108,41 @@ public final class EssentialsData {
         return Map.entry(name, loc);
     }
 
+    /** EssentialsX-Platzhalter in Textdateien → Nucleus-Platzhalter (MOTD, Regeln). */
+    private static final Map<String, String> TEXT_PLACEHOLDERS = Map.ofEntries(
+            Map.entry("PLAYER", "<player>"), Map.entry("DISPLAYNAME", "<player>"), Map.entry("USERNAME", "<player>"),
+            Map.entry("NICKNAME", "<player>"), Map.entry("ONLINE", "<online>"), Map.entry("MAXPLAYERS", "<max>"),
+            Map.entry("WORLD", "<world>"), Map.entry("WORLDNAME", "<world>"),
+            Map.entry("WORLDTIME12", "<worldtime>"), Map.entry("WORLDTIME24", "<worldtime>"),
+            Map.entry("TIME", "<time>"), Map.entry("DATE", "<date>"));
+    private static final java.util.regex.Pattern PLACEHOLDER = java.util.regex.Pattern.compile("\\{([A-Z0-9_]+)}");
+    private static final java.util.regex.Pattern URL = java.util.regex.Pattern.compile("https?://[^\\s<>'\"]+");
+
+    /**
+     * Eine Zeile aus motd.txt/rules.txt in MiniMessage: &amp;-Farbcodes, Platzhalter und anklickbare Links.
+     * Vorhandene "&lt;" werden maskiert, damit alter Text nicht als MiniMessage-Tag gelesen wird.
+     * Unbekannte Platzhalter bleiben als Text stehen.
+     */
+    public static String convertText(String line) {
+        String s = line.replace("\\", "\\\\").replace("<", "\\<");
+        java.util.regex.Matcher url = URL.matcher(s);
+        StringBuilder withLinks = new StringBuilder();
+        while (url.find()) {
+            String u = url.group();
+            url.appendReplacement(withLinks, java.util.regex.Matcher.quoteReplacement(
+                    "<click:open_url:'" + u + "'><u>" + u + "</u></click>"));
+        }
+        url.appendTail(withLinks);
+        java.util.regex.Matcher ph = PLACEHOLDER.matcher(withLinks.toString());
+        StringBuilder out = new StringBuilder();
+        while (ph.find()) {
+            String mapped = TEXT_PLACEHOLDERS.get(ph.group(1));
+            ph.appendReplacement(out, java.util.regex.Matcher.quoteReplacement(mapped != null ? mapped : ph.group()));
+        }
+        ph.appendTail(out);
+        return de.nucleus.util.LegacyCodes.toMiniMessage(out.toString());
+    }
+
     /**
      * UUID, die ein Server mit online-mode=false für diesen Namen vergibt (namensbasiert, Version 3).
      * Nötig, wenn die Essentials-Daten von einem Online-Server stammen, Nucleus aber offline läuft.

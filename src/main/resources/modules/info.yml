@@ -3,7 +3,8 @@
 #  An/aus in config.yml unter modules. Änderungen: /nucleus reload
 # ─────────────────────────────────────────────────────────────
 
-# Nachricht des Tages beim Beitritt und per /motd (MiniMessage). Platzhalter: <player>, <online>, <max>
+# Nachricht des Tages beim Beitritt und per /motd (MiniMessage).
+# Platzhalter: <player>, <online>, <max>, <world>, <worldtime> (Weltzeit), <time>, <date> (echte Zeit)
 motd:
   on-join: true
   lines:

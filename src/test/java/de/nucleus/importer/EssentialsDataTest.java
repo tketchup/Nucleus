@@ -150,4 +150,16 @@ class EssentialsDataTest {
         assertEquals(u.homes(), mapped.homes());
         assertTrue(EssentialsData.withUuid(u, offline, Map.of()).ignored().isEmpty(), "ohne Zuordnung weglassen");
     }
+
+    @Test
+    void convertsMotdLines() {
+        // Zeilen aus einer echten motd.txt
+        assertEquals("<blue>Willkommen, <player><blue>!", EssentialsData.convertText("&9Willkommen, {PLAYER}&9!"));
+        assertEquals("<blue>Spieler online:<aqua> <online> <blue>- Uhrzeit:<red> <worldtime>",
+                EssentialsData.convertText("&9Spieler online:&b {ONLINE} &9- Uhrzeit:&c {WORLDTIME12}"));
+        assertEquals("<blue>Karte: <aqua><click:open_url:'https://map.ketchby.me/'><u>https://map.ketchby.me/</u></click>",
+                EssentialsData.convertText("&9Karte: &bhttps://map.ketchby.me/"));
+        assertEquals("<gray>{UNBEKANNT} bleibt", EssentialsData.convertText("&7{UNBEKANNT} bleibt"));
+        assertEquals("a \\<b> c", EssentialsData.convertText("a <b> c"), "alte spitze Klammern sind kein Tag");
+    }
 }

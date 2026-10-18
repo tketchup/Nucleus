@@ -51,6 +51,9 @@ public final class CoreCommands {
         // offline: UUIDs über den Namen umrechnen (Daten vom Online-Server, Nucleus läuft offline)
         root.then(sub("import", ADMIN).then(CommandKit.sub("essentials", null)
                 .executes(kit.run(ctx -> runImport(ctx, false, null)))
+                .then(CommandKit.sub("motd", null)
+                        .executes(kit.run(ctx -> plugin.essentialsImporter().run(sender(ctx),
+                                plugin.essentialsImporter().defaultFolder(), false, true))))
                 .then(CommandKit.sub("offline", null)
                         .executes(kit.run(ctx -> runImport(ctx, true, null)))
                         .then(CommandKit.greedy("folder").executes(kit.run(ctx -> runImport(ctx, true, CommandKit.arg(ctx, "folder"))))))

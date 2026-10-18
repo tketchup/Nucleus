@@ -69,6 +69,13 @@ public final class ModuleManager {
         return type.isInstance(m) ? type.cast(m) : null;
     }
 
+    /** Einstellungen eines aktiven Moduls neu einlesen (ohne Neustart des Moduls). */
+    public void reloadSettings(String id) {
+        if (active.contains(id)) {
+            instances.get(id).reloadSettings();
+        }
+    }
+
     public void enableConfigured() {
         for (String id : KNOWN.keySet()) {
             if (isConfigured(id)) {

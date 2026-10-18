@@ -55,7 +55,8 @@ public final class EssentialsImporter {
     /** Alles, was aus dem Essentials-Ordner gelesen wurde. */
     private record Snapshot(List<EssentialsData.User> users, Map<String, EssentialsData.Loc> warps,
                             Map<String, EssentialsData.Loc> jails, Map<String, EssentialsData.Loc> spawns,
-                            int brokenFiles, int unmapped) {
+                            int brokenFiles, int unmapped,
+                            @Nullable List<String> motd, @Nullable List<String> rules) {
     }
 
     /** Zähler für den Abschlussbericht. */
@@ -68,6 +69,7 @@ public final class EssentialsImporter {
         final AtomicInteger mutes = new AtomicInteger();
         int warps;
         int jails;
+        String texts = "";
         int spawns;
         int skipped;
     }
@@ -87,11 +89,20 @@ public final class EssentialsImporter {
     }
 
     public void run(CommandSender sender, File folder, boolean offlineUuids) {
+        run(sender, folder, offlineUuids, false);
+    }
+
+    /**
+     * @param textsOnly nur MOTD und Regeln übernehmen, dabei vorhandene überschreiben
+     *                  (/nucleus import essentials motd). Die alten Zeilen landen vorher im Log.
+     */
+    public void run(CommandSender sender, File folder, boolean offlineUuids, boolean textsOnly) {
         if (running) {
             plugin.messages().send(sender, "core.import-running");
             return;
         }
-        if (!new File(folder, "userdata").isDirectory() && !new File(folder, "warps").isDirectory()) {
+        if (!new File(folder, "userdata").isDirectory() && !new File(folder, "warps").isDirectory()
+                && !new File(folder, "motd.txt").isFile()) {
             plugin.messages().send(sender, "core.import-no-folder", "folder", folder.getPath());
             return;
         }
@@ -107,7 +118,14 @@ public final class EssentialsImporter {
                 plugin.messages().send(sender, "error.internal");
                 return;
             }
-            apply(sender, snapshot);
+            if (textsOnly) {
+                running = false;
+                String result = importTexts(snapshot, true);
+                plugin.messages().send(sender, "core.import-texts", "result",
+                        result.isEmpty() ? plugin.messages().raw("core.import-texts-none") : result);
+            } else {
+                apply(sender, snapshot);
+            }
         }));
     }
 
@@ -166,12 +184,67 @@ public final class EssentialsImporter {
             }
             users = mapped;
         }
+        List<String> motd = readLines(new File(folder, "motd.txt"));
+        List<String> rules = readLines(new File(folder, "rules.txt"));
         Map<?, ?> jailFile = load(yaml, new File(folder, "jail.yml"), broken);
         Map<?, ?> spawnFile = load(yaml, new File(folder, "spawn.yml"), broken);
         return new Snapshot(users, warps,
                 EssentialsData.parseLocationSection(jailFile == null ? null : jailFile.get("jails")),
                 EssentialsData.parseLocationSection(spawnFile == null ? null : spawnFile.get("spawns")),
-                broken[0], unmapped);
+                broken[0], unmapped, motd, rules);
+    }
+
+    /** Textdatei (motd.txt, rules.txt) als umgewandelte MiniMessage-Zeilen; null wenn nicht vorhanden. */
+    private @Nullable List<String> readLines(File file) {
+        if (!file.isFile()) {
+            return null;
+        }
+        try {
+            List<String> out = new ArrayList<>();
+            for (String line : Files.readAllLines(file.toPath(), StandardCharsets.UTF_8)) {
+                out.add(EssentialsData.convertText(line));
+            }
+            while (!out.isEmpty() && out.getLast().isBlank()) {
+                out.removeLast();
+            }
+            return out;
+        } catch (IOException e) {
+            plugin.getLogger().warning("Nicht lesbar: " + file + " (" + e.getMessage() + ")");
+            return null;
+        }
+    }
+
+    /**
+     * MOTD und Regeln nach modules/info.yml. Ohne force nur, wenn dort noch der mitgelieferte Standard
+     * steht (eigene Texte werden nie überschrieben). Mit force werden die alten Zeilen ins Log geschrieben.
+     *
+     * @return kurze Beschreibung für den Bericht, leer wenn nichts übernommen wurde
+     */
+    private String importTexts(Snapshot data, boolean force) {
+        var info = plugin.config("info");
+        List<String> done = new ArrayList<>();
+        for (String[] t : new String[][]{{"motd.lines", "MOTD"}, {"rules", "Regeln"}}) {
+            List<String> lines = t[0].equals("rules") ? data.rules() : data.motd();
+            if (lines == null || lines.isEmpty()) {
+                continue;
+            }
+            List<String> current = info.getStringList(t[0]);
+            boolean isDefault = info.getDefaults() != null && current.equals(info.getDefaults().getStringList(t[0]));
+            if (!force && !isDefault) {
+                continue;
+            }
+            if (!current.isEmpty() && !isDefault) {
+                plugin.getLogger().info("Bisherige " + t[1] + " vor dem Import (zum Wiederherstellen): " + current);
+            }
+            info.set(t[0], lines);
+            done.add(t[1] + " (" + lines.size() + " Zeilen)");
+        }
+        if (!done.isEmpty()) {
+            plugin.moduleConfigs().save("info");
+            // Info-Modul sofort neu einlesen, damit die neue MOTD direkt gilt
+            plugin.modules().reloadSettings("info");
+        }
+        return String.join(", ", done);
     }
 
     private @Nullable Map<?, ?> load(Yaml yaml, File file, int[] broken) {
@@ -226,6 +299,7 @@ public final class EssentialsImporter {
             });
         }
 
+        report.texts = importTexts(data, false);
         EconomyService eco = plugin.modules().isActive("economy")
                 ? Bukkit.getServicesManager().load(EconomyService.class) : null;
         ChatModule chat = plugin.modules().get("chat", ChatModule.class);
@@ -242,6 +316,11 @@ public final class EssentialsImporter {
                     "warps", report.warps, "jails", report.jails, "spawns", report.spawns,
                     "balances", report.balances.get(), "nicks", report.nicks.get(), "mutes", report.mutes.get(),
                     "skipped", report.skipped, "broken", data.brokenFiles());
+            if (!report.texts.isEmpty()) {
+                plugin.messages().send(sender, "core.import-texts", "result", report.texts);
+            } else if (data.motd() != null) {
+                plugin.messages().send(sender, "core.import-texts-kept");
+            }
             plugin.getLogger().info("EssentialsX-Import abgeschlossen: " + report.players.get() + " Spieler, "
                     + report.homes.get() + " Homes, " + report.warps + " Warps, " + report.balances.get() + " Kontostände.");
         }));

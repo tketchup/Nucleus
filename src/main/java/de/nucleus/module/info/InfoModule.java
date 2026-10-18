@@ -78,7 +78,8 @@ public final class InfoModule implements Module {
     }
 
     /** Nach Änderungen im Spiel (z. B. /motd set) die Einstellungen sofort neu übernehmen. */
-    void reloadSettings() {
+    @Override
+    public void reloadSettings() {
         settings = Settings.load(plugin.config("info"));
     }
 
@@ -103,11 +104,20 @@ public final class InfoModule implements Module {
         return plugin;
     }
 
-    /** Mehrzeiliger Text aus der Config mit &lt;player&gt;, &lt;online&gt;, &lt;max&gt; (MOTD, Regeln). */
+    /**
+     * Mehrzeiliger Text aus der Config (MOTD, Regeln) mit den Platzhaltern &lt;player&gt;, &lt;online&gt;,
+     * &lt;max&gt;, &lt;world&gt;, &lt;worldtime&gt; (Uhrzeit der Welt), &lt;time&gt; und &lt;date&gt; (echte Uhrzeit).
+     */
     void sendLines(org.bukkit.command.CommandSender to, List<String> lines) {
+        org.bukkit.World world = to instanceof Player p ? p.getWorld() : Bukkit.getWorlds().getFirst();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        String worldTime = world.isFixedTime() ? "–" : de.nucleus.util.GameTime.clock(world.getTime());
         for (String line : lines) {
             to.sendMessage(plugin.messages().parse(line, "player", to.getName(),
-                    "online", Bukkit.getOnlinePlayers().size(), "max", Bukkit.getMaxPlayers()));
+                    "online", Bukkit.getOnlinePlayers().size(), "max", Bukkit.getMaxPlayers(),
+                    "world", world.getName(), "worldtime", worldTime,
+                    "time", String.format(java.util.Locale.ROOT, "%02d:%02d", now.getHour(), now.getMinute()),
+                    "date", plugin.messages().date(System.currentTimeMillis()).split(" ")[0]));
         }
     }
 }
