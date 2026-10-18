@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul chat (Chat-Format, /msg, Nicknames, Mail, Beitrittsnachrichten)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+# ─────────────────────────────────────────────────────────────
+
+# Chat-Format (MiniMessage). Platzhalter: <display_name>, <player>, <world>, <message>
+format: '<display_name> <dark_gray>»</dark_gray> <gray><message>'
+# /me. Platzhalter: <display_name>, <player>, <message>
+me-format: '<gray>* <display_name> <message>'
+# /broadcast. Platzhalter: <message>
+broadcast-format: '<dark_gray>[<red>Rundruf</red>]</dark_gray> <white><message>'
+# Beitritt/Austritt: Platzhalter <player>, <display_name>. '' = keine Nachricht, 'vanilla' = Standard behalten
+join-message: '<dark_gray>[<green>+</green>]</dark_gray> <gray><display_name>'
+first-join-message: '<dark_gray>[<green>+</green>]</dark_gray> <gold>Willkommen <display_name> auf dem Server!'
+quit-message: '<dark_gray>[<red>-</red>]</dark_gray> <gray><display_name>'
+# Chat-Cooldown in Sekunden (0 = aus). Bypass: nucleus.chat.bypass.cooldown
+cooldown-seconds: 0
+# Spam-Schutz. Bypass: nucleus.chat.bypass.spam
+spam:
+  # Gleiche Nachricht innerhalb des Zeitfensters blockieren
+  block-repeat: true
+  repeat-window-seconds: 30
+  # Höchstens so viele Nachrichten pro Zeitfenster (0 = aus)
+  max-messages: 5
+  window-seconds: 10
+nick:
+  min-length: 3
+  max-length: 16
+  # Erlaubte Zeichen (ohne Formatierung gezählt)
+  allowed-pattern: '[A-Za-z0-9_]+'
+  # Wird vor jeden Nick gesetzt, damit man Nicks erkennt ('' = nichts)
+  prefix: '~'
+  # Nick auch in der Tab-Liste anzeigen
+  show-in-tablist: false
+mail:
+  # Höchstzahl Mails pro Postfach, älteste werden verworfen
+  max-per-player: 50

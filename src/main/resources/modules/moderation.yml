@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul moderation (Bans, Mute, Jail, Vanish, Freeze)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+# ─────────────────────────────────────────────────────────────
+
+mute:
+  # Diese Befehle sind für stumme Spieler gesperrt (ohne "/", Namespace wie minecraft: wird ignoriert).
+  # Der Chat selbst ist immer gesperrt, auch ohne chat-Modul.
+  blocked-commands: [msg, tell, w, whisper, pm, m, r, reply, me, mail, broadcast, bc, say, teammsg, tm]
+jail:
+  # Wie weit man sich vom Jail-Punkt entfernen darf (Blöcke)
+  radius: 10
+  # Nur diese Befehle sind im Jail erlaubt. Ausnahme: nucleus.jail.exempt
+  allowed-commands: [msg, tell, r, reply, rules, motd, list, ping]
+vanish:
+  # Vanish bleibt über Neustarts und Weltwechsel erhalten
+  persist: true
+  # Beim Ein-/Ausschalten eine echt aussehende "hat das Spiel verlassen/betreten"-Nachricht senden
+  fake-join-quit: true
+  # Unsichtbare heben keine Items auf
+  prevent-pickup: true
+  # Mobs greifen Unsichtbare nicht an
+  prevent-mob-target: true

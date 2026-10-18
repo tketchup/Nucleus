@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul info (/list, /seen, /whois, AFK, MOTD, Regeln)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+# ─────────────────────────────────────────────────────────────
+
+# Nachricht des Tages beim Beitritt und per /motd (MiniMessage). Platzhalter: <player>, <online>, <max>
+motd:
+  on-join: true
+  lines:
+    - '<gray>Willkommen, <white><player></white>! Es sind <white><online>/<max></white> Spieler online.'
+    - '<gray>Regeln: <aqua><click:run_command:/rules>/rules</click></aqua>'
+
+# /rules
+rules:
+  - '<gold>Serverregeln:'
+  - '<gray>1. Sei freundlich.'
+  - '<gray>2. Kein Griefing, kein Cheating.'
+  - '<gray>3. Kein Spam.'
+
+afk:
+  # Automatisch AFK nach so vielen Minuten ohne Aktivität (0 = aus). Ausnahme: nucleus.afk.exempt
+  auto-afk-minutes: 5
+  # AFK-Spieler nach so vielen Minuten Inaktivität kicken (0 = aus). Ausnahme: nucleus.afk.kickexempt
+  kick-after-minutes: 0
+  # AFK in der Tab-Liste markieren. Ist das chat-Modul aktiv, wird immer markiert.
+  # Bewusst aus, damit z. B. TagMC die Tab-Liste allein verwaltet.
+  tablist-marker: false
+  # AFK-Spieler zählen beim Schlafen nicht mit (Nacht wird ohne sie übersprungen)
+  ignore-sleep: true
+  # AFK-Wechsel an alle melden (sonst nur an den Spieler selbst)
+  broadcast: true
+
+near:
+  default-radius: 100
+  # Größerer Radius nur mit nucleus.near.unlimited
+  max-radius: 500

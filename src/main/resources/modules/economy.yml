@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul economy (Konten, /pay, /baltop, Vault)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+# ─────────────────────────────────────────────────────────────
+
+currency-singular: Taler
+currency-plural: Taler
+symbol: 'T'
+# Darstellung von Beträgen. Platzhalter: <amount>, <symbol>, <currency>
+format: '<amount> <currency>'
+# Nachkommastellen (0-4). Änderung gilt nach Neustart, gespeicherte Stände werden umgerechnet.
+decimals: 2
+# Startguthaben für neue Konten
+starting-balance: 100
+# Höchster Kontostand
+max-balance: 1000000000
+pay:
+  # Kleinster Betrag für /pay
+  min-amount: 0.01
+  # Größter Betrag für /pay (0 = unbegrenzt)
+  max-amount: 0
+baltop:
+  page-size: 10
+  # Wie lange die Bestenliste zwischengespeichert wird (Sekunden)
+  cache-seconds: 60
+# Wie oft geänderte Kontostände gespeichert werden (Sekunden)
+autosave-seconds: 30
+
+vault:
+  # Nucleus als Economy für VaultUnlocked bereitstellen (moderne und klassische Vault-API).
+  # Wirkt nur, wenn VaultUnlocked installiert ist; Shops und andere Plugins nutzen dann Nucleus-Geld.
+  enabled: true

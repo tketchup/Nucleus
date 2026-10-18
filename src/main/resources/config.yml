@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Hauptkonfiguration
+#  Hier: Module an/aus, Sprache, Farben, Speichern.
+#  Einstellungen der Module: modules/<modul>.yml  ·  Texte: lang/de.yml, lang/en.yml
+#  Änderungen übernehmen: /nucleus reload (oder Server neu starten).
+#  Neue oder abgeschaltete Module bekommen bzw. verlieren ihre Befehle
+#  erst nach einem Neustart oder /minecraft:reload (Brigadier-Grenze).
+# ─────────────────────────────────────────────────────────────
+
+# Module einzeln an- und abschalten. Ein abgeschaltetes Modul lädt keinen Code,
+# registriert keine Befehle und keine Listener.
+modules:
+  teleport: true
+  # Standardmäßig aus: auf dem Testserver übernimmt TagMC Chat und Tab-Liste
+  chat: false
+  info: true
+  economy: true
+  moderation: true
+  gameplay: true
+  # Truhen und andere Behälter mit /lock sichern (optional mit Passwort)
+  lock: true
+
+# Sprache aller Texte: de (Deutsch) oder en (English). Texte liegen in lang/de.yml und lang/en.yml.
+# Umschalten mit /nucleus reload; Beschreibungen in /help nach Neustart oder /minecraft:reload.
+language: de
+
+# Farben aller Nucleus-Nachrichten (Hex wie '#5DADEC' oder Namen wie 'aqua').
+# Für alles in einer Farbe: alle drei gleich setzen. Die Texte selbst stehen in lang/*.yml.
+messages:
+  # Grundfarbe, damit sich Nucleus-Meldungen vom übrigen Chat abheben
+  color: '#5DADEC'
+  # Hervorgehobene Namen und Werte (<hl> in den Sprachdateien)
+  highlight: '#FFFFFF'
+  # Fehlermeldungen (<err> in den Sprachdateien)
+  error: '#FF6B6B'
+
+data:
+  # Wie oft geänderte Spielerdaten im Hintergrund gespeichert werden (Sekunden, min. 30)
+  autosave-seconds: 300

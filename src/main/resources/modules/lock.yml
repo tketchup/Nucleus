@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul lock (Truhen und andere Behälter sichern)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+#  Die Sperren selbst stehen im Block (keine eigene Datei), Passwörter nur als Hash.
+# ─────────────────────────────────────────────────────────────
+
+# Welche Blöcke mit /lock gesichert werden können (Block-IDs)
+lockable:
+  - chest
+  - trapped_chest
+  - barrel
+  - furnace
+  - blast_furnace
+  - smoker
+  - hopper
+  - dropper
+  - dispenser
+  - brewing_stand
+
+# Neu gesetzte Behälter automatisch für den Spieler sperren (braucht nucleus.lock)
+auto-lock: false
+
+# Trichter dürfen nur aus gesperrten Behältern ziehen, wenn sie demselben Spieler gehören
+protect-hoppers: true
+
+# Gesperrte Behälter überstehen Explosionen (Creeper, TNT)
+protect-explosions: true
+
+# Wie weit man beim Befehl /lock vom Behälter entfernt sein darf (Blöcke, 1-10)
+max-distance: 5
+
+password:
+  # Passwörter erlauben (/lock password). Eingabe immer per Dialog, damit es nicht im Server-Log steht.
+  enabled: true
+  min-length: 4
+  # Nach richtigem Passwort: session = Zugang bis zum Ausloggen, permanent = Spieler wird dauerhaft vertraut
+  remember: session

@@ -1,0 +1,14 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul gameplay (Gamemode, God, Fly, Items, Zeit, Wetter)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+# ─────────────────────────────────────────────────────────────
+
+# God-Modus und Fliegen bleiben über Neustarts, Weltwechsel und Spielmoduswechsel erhalten
+persist-god: true
+persist-fly: true
+# Im God-Modus kein Hunger
+god-no-hunger: true
+# Höchstmenge für /give und /item
+max-give-amount: 2304
+# Höchstanzahl für /spawnmob
+max-spawnmob: 50

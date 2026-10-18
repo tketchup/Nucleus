@@ -1,0 +1,286 @@
+name: Nucleus
+version: '${version}'
+main: de.nucleus.NucleusPlugin
+description: '${description}'
+api-version: '26.3'
+author: lukas
+# Optional: VaultUnlocked (Plugin-Name "Vault") vor Nucleus laden, damit die Economy-Anbindung klappt
+softdepend: [Vault]
+
+# Alle Befehle werden über die Paper-Brigadier-API (LifecycleEvents.COMMANDS) registriert,
+# und zwar nur für aktivierte Module. Deshalb steht hier bewusst KEIN "commands:"-Block.
+# Hier stehen nur die Standardwerte der Permissions (true = alle Spieler, op = Operatoren).
+
+permissions:
+  # ── Kern ──
+  nucleus.admin:
+    description: /nucleus reload und /nucleus modules
+    default: op
+
+  # ── Teleport: Spieler ──
+  nucleus.player.teleport:
+    description: Alle normalen Teleport-Befehle für Spieler
+    default: true
+    children:
+      nucleus.home: true
+      nucleus.sethome: true
+      nucleus.delhome: true
+      nucleus.warp: true
+      nucleus.spawn: true
+      nucleus.tpa: true
+      nucleus.tpahere: true
+      nucleus.tpaccept: true
+      nucleus.tpdeny: true
+      nucleus.tpcancel: true
+      nucleus.tptoggle: true
+      nucleus.back: true
+
+  # ── Teleport: Admin ──
+  nucleus.admin.teleport:
+    description: Alle Admin-Teleport-Rechte
+    default: op
+    children:
+      nucleus.home.others: true
+      nucleus.setwarp: true
+      nucleus.delwarp: true
+      nucleus.warp.others: true
+      nucleus.setspawn: true
+      nucleus.spawn.others: true
+      nucleus.tp: true
+      nucleus.tp.others: true
+      nucleus.tpo: true
+      nucleus.tphere: true
+      nucleus.tpall: true
+      nucleus.tppos: true
+      nucleus.top: true
+      nucleus.back.ondeath: true
+      nucleus.tptoggle.bypass: true
+
+  # Bewusst auch für Operatoren aus (default: false): nur gezielt vergeben
+  nucleus.homes.unlimited:
+    description: Unbegrenzt viele Homes
+    default: false
+  nucleus.teleport.bypass.warmup:
+    description: Keine Teleport-Wartezeit
+    default: false
+  nucleus.teleport.bypass.cooldown:
+    description: Kein Teleport-Cooldown
+    default: false
+  nucleus.teleport.bypass.worldborder:
+    description: Teleport außerhalb der Weltgrenze
+    default: false
+
+  # ── Chat: Spieler ──
+  nucleus.player.chat:
+    description: Normale Chat-Befehle für Spieler
+    default: true
+    children:
+      nucleus.msg: true
+      nucleus.ignore: true
+      nucleus.me: true
+      nucleus.mail: true
+      nucleus.mail.send: true
+      nucleus.realname: true
+
+  # ── Chat: Admin ──
+  nucleus.admin.chat:
+    description: Admin-Rechte im Chat
+    default: op
+    children:
+      nucleus.socialspy: true
+      nucleus.broadcast: true
+      nucleus.nick: true
+      nucleus.nick.others: true
+      nucleus.nick.color: true
+      nucleus.nick.hex: true
+      nucleus.nick.format: true
+      nucleus.nick.minimessage: true
+      nucleus.chat.color: true
+      nucleus.chat.hex: true
+      nucleus.chat.format: true
+      nucleus.chat.bypass.cooldown: true
+      nucleus.chat.bypass.spam: true
+      nucleus.ignore.exempt: true
+
+  # Chat-Formatierung einzeln (auch für Spieler vergebbar):
+  # nucleus.chat.color / .hex / .format / .minimessage, nucleus.nick.color / .hex / .format / .minimessage
+  nucleus.chat.minimessage:
+    description: Verläufe, Regenbogen usw. im Chat und in /msg
+    default: false
+
+  # ── Info: Spieler ──
+  nucleus.player.info:
+    description: Normale Info-Befehle für Spieler
+    default: true
+    children:
+      nucleus.list: true
+      nucleus.seen: true
+      nucleus.getpos: true
+      nucleus.near: true
+      nucleus.ping: true
+      nucleus.playtime: true
+      nucleus.compass: true
+      nucleus.depth: true
+      nucleus.afk: true
+      nucleus.motd: true
+      nucleus.rules: true
+
+  # ── Info: Admin ──
+  nucleus.admin.info:
+    description: Admin-Rechte im Info-Modul
+    default: op
+    children:
+      nucleus.whois: true
+      nucleus.whois.ip: true
+      nucleus.getpos.others: true
+      nucleus.ping.others: true
+      nucleus.playtime.others: true
+      nucleus.near.unlimited: true
+      nucleus.motd.edit: true
+      nucleus.rules.edit: true
+
+  nucleus.afk.exempt:
+    description: Wird nie automatisch AFK
+    default: false
+  nucleus.afk.kickexempt:
+    description: Wird nie wegen AFK gekickt
+    default: false
+
+  # ── Economy ──
+  nucleus.player.economy:
+    description: Normale Economy-Befehle für Spieler
+    default: true
+    children:
+      nucleus.balance: true
+      nucleus.pay: true
+      nucleus.paytoggle: true
+      nucleus.baltop: true
+  nucleus.admin.economy:
+    description: Admin-Rechte für Economy
+    default: op
+    children:
+      nucleus.balance.others: true
+      nucleus.eco: true
+
+  # ── Moderation (alles op) ──
+  nucleus.admin.moderation:
+    description: Alle Moderationsrechte
+    default: op
+    children:
+      nucleus.kick: true
+      nucleus.ban: true
+      nucleus.tempban: true
+      nucleus.unban: true
+      nucleus.banip: true
+      nucleus.unbanip: true
+      nucleus.baninfo: true
+      nucleus.mute: true
+      nucleus.freeze: true
+      nucleus.jail: true
+      nucleus.setjail: true
+      nucleus.vanish: true
+      nucleus.vanish.others: true
+      nucleus.vanish.see: true
+      nucleus.invsee: true
+      nucleus.invsee.modify: true
+      nucleus.enderchest: true
+      nucleus.enderchest.others: true
+      nucleus.enderchest.modify: true
+      nucleus.clearinventory: true
+      nucleus.clearinventory.others: true
+      nucleus.sudo: true
+      nucleus.commandspy: true
+      nucleus.moderation.notify: true
+
+  # Ausnahmen: bewusst auch für Operatoren aus, nur gezielt vergeben
+  nucleus.moderation.exempt:
+    description: Schutz vor Kick, Bann, Mute, Freeze, Jail, Sudo, Invsee-Bearbeitung, Clearinventory
+    default: false
+    children:
+      nucleus.kick.exempt: true
+      nucleus.ban.exempt: true
+      nucleus.mute.exempt: true
+      nucleus.freeze.exempt: true
+      nucleus.jail.exempt: true
+      nucleus.sudo.exempt: true
+      nucleus.invsee.exempt: true
+      nucleus.clearinventory.exempt: true
+  nucleus.commandspy.exempt:
+    description: Eigene Befehle erscheinen nicht im CommandSpy
+    default: false
+
+  # ── Gameplay: Spieler ──
+  nucleus.player.gameplay:
+    description: Gameplay-Befehle für alle Spieler
+    default: true
+    children:
+      nucleus.suicide: true
+      nucleus.trash: true
+
+  # ── Gameplay: Admin ──
+  nucleus.admin.gameplay:
+    description: Alle Gameplay-Rechte
+    default: op
+    children:
+      nucleus.gamemode: true
+      nucleus.gamemode.others: true
+      nucleus.fly: true
+      nucleus.fly.others: true
+      nucleus.god: true
+      nucleus.god.others: true
+      nucleus.heal: true
+      nucleus.heal.others: true
+      nucleus.feed: true
+      nucleus.feed.others: true
+      nucleus.speed: true
+      nucleus.speed.others: true
+      nucleus.burn: true
+      nucleus.extinguish: true
+      nucleus.extinguish.others: true
+      nucleus.lightning: true
+      nucleus.time: true
+      nucleus.weather: true
+      nucleus.ptime: true
+      nucleus.ptime.others: true
+      nucleus.pweather: true
+      nucleus.pweather.others: true
+      nucleus.give: true
+      nucleus.item: true
+      nucleus.more: true
+      nucleus.repair: true
+      nucleus.repair.all: true
+      nucleus.enchant: true
+      nucleus.enchant.unsafe: true
+      nucleus.hat: true
+      nucleus.itemname: true
+      nucleus.itemname.color: true
+      nucleus.itemname.hex: true
+      nucleus.itemname.format: true
+      nucleus.itemname.minimessage: true
+      nucleus.itemlore: true
+      nucleus.skull: true
+      nucleus.skull.others: true
+      nucleus.powertool: true
+      nucleus.spawnmob: true
+      nucleus.spawnmob.others: true
+      nucleus.workbench: true
+      nucleus.anvil: true
+      nucleus.grindstone: true
+      nucleus.stonecutter: true
+      nucleus.loom: true
+      nucleus.cartography: true
+      nucleus.smithing: true
+
+  # ── Lock ──
+  nucleus.lock:
+    description: Eigene Behälter mit /lock sichern, /unlock, trust/untrust, info
+    default: true
+  nucleus.lock.password:
+    description: Passwort für eigene Behälter setzen
+    default: true
+  nucleus.lock.bypass:
+    description: Alle gesperrten Behälter öffnen und abbauen
+    default: op
+  nucleus.lock.admin:
+    description: Fremde Sperren verwalten und aufheben
+    default: op

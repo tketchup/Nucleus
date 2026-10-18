@@ -1,0 +1,111 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul teleport (Homes, Warps, Spawn, TPA, /back, Teleport-Regeln)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+# ─────────────────────────────────────────────────────────────
+
+# Wartezeit vor Spieler-Teleports (/home, /warp, /spawn, /back, /tpaccept ...) an/aus.
+# Bypass: nucleus.teleport.bypass.warmup
+warmup-enabled: true
+warmup-seconds: 3
+# Countdown "Teleport in 3… 2… 1…" in der Actionbar über der Hotbar
+countdown-actionbar: true
+cancel-on-move: true
+cancel-on-damage: true
+# Sichere Zielposition suchen (kein Block im Gesicht, keine Lava, kein Void, kein tiefer Fall).
+# Gilt nicht für Spieler im Kreativ- oder Zuschauermodus.
+safe-location: true
+# Wie weit seitlich nach einer sicheren Stelle gesucht wird (0-8 Blöcke)
+safe-search-radius: 3
+# Alle Teleport-Cooldowns an/aus (die Sekunden darunter bleiben erhalten).
+# Bypass: nucleus.teleport.bypass.cooldown
+cooldowns-enabled: true
+# Cooldown in Sekunden pro Befehl (0 = aus für diesen Befehl)
+cooldowns:
+  home: 5
+  warp: 5
+  spawn: 5
+  back: 10
+  top: 0
+  tpa: 10
+cross-world:
+  # true: Teleport in eine andere Welt braucht nucleus.teleport.world.<weltname>
+  require-permission: false
+# false: Ziele außerhalb der Weltgrenze nur mit nucleus.teleport.bypass.worldborder
+allow-outside-worldborder: false
+
+gui:
+  # true: /homes und /warps öffnen ein Menü. false: Liste im Chat (anklickbare Namen)
+  enabled: true
+  # Symbol-Auswahl im Homes-/Warps-GUI (Item-IDs, höchstens 45). Eigene einfach ergänzen.
+  icons:
+    - grass_block
+    - dirt
+    - stone
+    - cobblestone
+    - oak_log
+    - oak_planks
+    - sand
+    - snow_block
+    - ice
+    - netherrack
+    - end_stone
+    - obsidian
+    - glowstone
+    - sea_lantern
+    - amethyst_block
+    - copper_block
+    - tnt
+    - bookshelf
+    - iron_block
+    - gold_block
+    - diamond_block
+    - emerald_block
+    - redstone_block
+    - lapis_block
+    - netherite_block
+    - beacon
+    - nether_star
+    - crafting_table
+    - furnace
+    - chest
+    - ender_chest
+    - anvil
+    - enchanting_table
+    - brewing_stand
+    - red_bed
+    - compass
+    - clock
+    - ender_pearl
+    - diamond_sword
+    - diamond_pickaxe
+    - pumpkin
+    - melon
+    - oak_sapling
+    - poppy
+    - cactus
+
+homes:
+  # Standard-Limit. Mehr per nucleus.homes.<zahl> (größte gewinnt), unbegrenzt per nucleus.homes.unlimited
+  default-limit: 3
+
+warps:
+  # true: jeder Warp braucht zusätzlich nucleus.warp.<name>
+  per-warp-permission: false
+
+spawn:
+  # true: /setspawn setzt den Spawn der aktuellen Welt, /spawn nutzt den Spawn der Welt, in der man ist
+  per-world: false
+  # Neue Spieler erscheinen beim ersten Beitritt am Spawn
+  teleport-new-players: true
+  # Respawn nach dem Tod: always = immer am Spawn, no-bed = nur ohne Bett/Seelenanker, off = Vanilla
+  respawn-at-spawn: no-bed
+
+tpa:
+  # Nach wie vielen Sekunden eine Anfrage verfällt (min. 10)
+  expire-seconds: 120
+
+back:
+  # /back merkt sich den Startpunkt von Befehls- und Plugin-Teleports
+  record-teleports: true
+  # /back merkt sich den Todesort (zusätzlich Permission nucleus.back.ondeath nötig)
+  record-death: true
