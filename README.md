@@ -16,7 +16,7 @@ Komplett neu geschrieben (Clean-Room, kein Code und keine Texte aus EssentialsX)
 | Modul | Inhalt |
 |---|---|
 | `teleport` | Homes (mit GUI), Warps (mit GUI), Spawn, TPA mit Klick-Buttons, `/back`, Admin-Teleports, Wartezeit mit Countdown, Cooldowns, sichere Zielsuche |
-| `chat` | Chat-Format (MiniMessage), `/msg`, `/r`, `/ignore`, SocialSpy, Nicknames, `/me`, `/broadcast`, Mail, Join-/Quit-Nachrichten (standardmäßig aus) |
+| `chat` | Chat-Format (MiniMessage), Tags im Chat und in der Tab-Liste (`/tag`), `/msg`, `/r`, `/ignore`, SocialSpy, Nicknames, `/me`, `/broadcast`, Mail, Join-/Quit-Nachrichten (standardmäßig aus) |
 | `info` | `/list`, `/seen`, `/whois`, `/near`, `/ping`, `/playtime`, AFK-System, MOTD und Regeln (im Spiel bearbeitbar) |
 | `economy` | Konten in Cent (keine Rundungsfehler), `/pay`, `/baltop`, `/eco`, öffentliche `EconomyService`-API, VaultUnlocked-Anbindung |
 | `moderation` | Kick, Ban, Tempban, IP-Ban, Mute, Freeze, Jail, Vanish, Invsee, Enderchest, Sudo, CommandSpy, `moderation.log` |
@@ -40,6 +40,12 @@ Stammen die Daten von einem Server mit `online-mode=true`, Nucleus läuft aber m
 Spieler dort andere UUIDs. Dann `/nucleus import essentials offline` benutzen: die UUIDs werden über den
 Spielernamen umgerechnet.
 
+### Vom TagPlugin (TagMC) umsteigen
+
+Bei aktivem `chat`-Modul übernimmt `/nucleus import tagplugin` aus `plugins/TagPlugin` alle Tags, vergebene Tags
+und die Formate für Chat und Tab-Liste. Danach das TagPlugin entfernen, damit `/tag`, Chat und Tab-Liste nur
+noch von Nucleus kommen.
+
 ### VaultUnlocked
 
 Ist [VaultUnlocked](https://modrinth.com/project/vaultunlocked) installiert, meldet sich Nucleus automatisch als
@@ -54,6 +60,7 @@ plugins/Nucleus/
 ├── lang/de.yml, en.yml Alle Texte (MiniMessage)
 ├── playerdata/*.yml    Spielerdaten pro UUID
 ├── economy.yml         Kontostände
+├── tags.yml            Tags (chat-Modul)
 ├── warps.yml, spawns.yml, jails.yml
 └── moderation.log      Protokoll aller Moderationsaktionen
 ```
