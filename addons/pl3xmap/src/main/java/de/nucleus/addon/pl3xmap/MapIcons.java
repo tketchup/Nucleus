@@ -33,6 +33,18 @@ final class MapIcons {
         registry.register(new IconImage(MOB_OTHER, dot(new Color(0xFF, 0xDD, 0x44)), "png"));
     }
 
+    /**
+     * Registriert eine Minecraft-Textur als Kartensymbol, pixelgenau vergrößert (sonst wird sie im Browser unscharf).
+     */
+    static void registerTexture(String key, BufferedImage texture, int size) {
+        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g.drawImage(texture, 0, 0, size, size, null);
+        g.dispose();
+        Pl3xMap.api().getIconRegistry().register(new IconImage(key, img, "png"));
+    }
+
     private static Graphics2D canvas(BufferedImage img) {
         Graphics2D g = img.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

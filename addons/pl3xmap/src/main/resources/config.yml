@@ -18,6 +18,9 @@ spawns:
   enabled: true
   label: ''
   default-hidden: false
+  # Liegt der Nucleus-Spawn höchstens so viele Blöcke vom Vanilla-Weltspawn entfernt, wird er nicht extra
+  # gezeigt (das Spawn-Symbol von Pl3xMap reicht). 0 = immer zeigen.
+  hide-near-world-spawn: 16
 
 # Lebende Mobs (keine Spieler)
 mobs:
@@ -32,3 +35,13 @@ mobs:
   hostile: true
   passive: true
   other: true
+
+# Symbole aus den Minecraft-Texturen: Mobs als Spawn-Ei, Warps mit dem Symbol aus dem Warps-GUI.
+# Die Texturen gehören Mojang und sind deshalb nicht im Plugin enthalten. Sie werden einmal pro
+# Minecraft-Version aus dem Minecraft-Client geholt und in plugins/Nucleus-Pl3xMap/textures/ gespeichert.
+# Ohne Texturen gibt es einfache Symbole (farbige Punkte).
+textures:
+  # Client-Jar dieser Minecraft-Version einmalig direkt von Mojang laden (ca. 30 MB, wird danach gelöscht)
+  download-from-mojang: false
+  # Oder Pfad zu einer vorhandenen Client-Jar, z. B. aus dem Launcher (hat Vorrang vor dem Download)
+  client-jar: ''

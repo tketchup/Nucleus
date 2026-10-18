@@ -43,7 +43,11 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
 
     /** Pl3xMap-Weltname → Ebenen dieser Welt. */
     private final Map<String, Map<String, MapLayer>> layers = new ConcurrentHashMap<>();
+    /** Kartensymbole aus Minecraft-Texturen, die schon bei Pl3xMap registriert sind bzw. gerade erzeugt werden. */
+    private final Set<String> textureIcons = ConcurrentHashMap.newKeySet();
+    private final Set<String> pendingIcons = ConcurrentHashMap.newKeySet();
     private NucleusPlugin nucleus;
+    private Textures textures;
     private boolean english;
 
     @Override
@@ -70,6 +74,21 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
         long mobTicks = Math.max(1, getConfig().getInt("mobs.update-seconds")) * 20L;
         Bukkit.getScheduler().runTaskTimer(this, this::updateMobs, 40L, mobTicks);
         getLogger().info("Pl3xMap-Ebenen für Nucleus aktiv.");
+
+        // Minecraft-Texturen für Mob- und Warp-Symbole im Hintergrund bereitstellen
+        textures = new Textures(getDataFolder().toPath().resolve("textures"), getLogger());
+        String version = Bukkit.getMinecraftVersion();
+        String clientJar = getConfig().getString("textures.client-jar", "");
+        boolean download = getConfig().getBoolean("textures.download-from-mojang");
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            if (textures.prepare(version, clientJar == null ? "" : clientJar, download)) {
+                registerSpawnEggs();
+                Bukkit.getScheduler().runTask(this, () -> {
+                    updatePlaces();
+                    updateMobs();
+                });
+            }
+        });
     }
 
     @Override
@@ -126,6 +145,48 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
         return byKey != null ? byKey : layers.get(world.getKey().toString());
     }
 
+    // --- Symbole aus Texturen ---
+
+    private static final int MOB_SIZE = 16;
+    private static final int WARP_SIZE = 24;
+
+    /** Alle Spawn-Eier als Symbole registrieren (Hintergrund-Thread). */
+    private void registerSpawnEggs() {
+        for (org.bukkit.entity.EntityType type : org.bukkit.entity.EntityType.values()) {
+            if (type == org.bukkit.entity.EntityType.UNKNOWN || !type.isAlive()) {
+                continue;
+            }
+            String mob = type.getKey().getKey();
+            var img = textures.spawnEgg(mob);
+            if (img != null) {
+                MapIcons.registerTexture("nucleus_egg_" + mob, img, MOB_SIZE * 2);
+                textureIcons.add("nucleus_egg_" + mob);
+            }
+        }
+    }
+
+    /**
+     * Symbol für ein Item (Warp-Symbol aus dem GUI). Fehlt es noch, wird es im Hintergrund erzeugt und bis dahin
+     * {@code null} geliefert (dann gilt das einfache Symbol).
+     */
+    private @Nullable String itemIcon(String itemKey) {
+        String key = "nucleus_item_" + itemKey.replace(':', '_');
+        if (textureIcons.contains(key)) {
+            return key;
+        }
+        if (textures != null && textures.ready() && pendingIcons.add(key)) {
+            Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+                var img = textures.item(itemKey);
+                if (img != null) {
+                    MapIcons.registerTexture(key, img, WARP_SIZE * 2);
+                    textureIcons.add(key);
+                    Bukkit.getScheduler().runTask(this, this::updatePlaces);
+                }
+            });
+        }
+        return null;
+    }
+
     // --- Warps und Spawns ---
 
     private void updatePlaces() {
@@ -144,7 +205,11 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
                 if (teleport != null) {
                     teleport.warps().all().forEach((name, loc) -> {
                         if (loc.world().equals(world.getName()) && !hidden.contains(name)) {
-                            markers.add(place("warp_" + name, loc, MapIcons.WARP, name, "/warp " + name));
+                            String item = teleport.warps().icon(name);
+                            String icon = itemIcon(item != null ? item : "minecraft:ender_pearl");
+                            markers.add(icon != null
+                                    ? place("warp_" + name, loc, icon, WARP_SIZE, name, "/warp " + name)
+                                    : place("warp_" + name, loc, MapIcons.WARP, 20, name, "/warp " + name));
                         }
                     });
                 }
@@ -154,13 +219,19 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
             if (spawnLayer != null) {
                 List<Marker<?>> markers = new ArrayList<>();
                 if (teleport != null) {
-                    // Liegen globaler Spawn und Welt-Spawn an derselben Stelle, nur einen Marker zeigen
+                    // Liegen globaler Spawn und Welt-Spawn an derselben Stelle, nur einen Marker zeigen.
+                    // Liegt der Nucleus-Spawn am Vanilla-Weltspawn, reicht das Spawn-Symbol von Pl3xMap.
                     Set<String> seen = new HashSet<>();
+                    double hideRadius = getConfig().getDouble("spawns.hide-near-world-spawn");
+                    var worldSpawn = world.getSpawnLocation();
                     teleport.spawns().all().forEach((key, loc) -> {
                         String pos = loc.world() + ":" + (int) loc.x() + ":" + (int) loc.z();
-                        if (loc.world().equals(world.getName()) && seen.add(pos)) {
+                        double dx = loc.x() - worldSpawn.getX();
+                        double dz = loc.z() - worldSpawn.getZ();
+                        boolean atWorldSpawn = hideRadius > 0 && dx * dx + dz * dz <= hideRadius * hideRadius;
+                        if (loc.world().equals(world.getName()) && !atWorldSpawn && seen.add(pos)) {
                             String title = "global".equals(key) ? "Spawn" : "Spawn (" + key + ")";
-                            markers.add(place("spawn_" + key, loc, MapIcons.SPAWN, title, "/spawn"));
+                            markers.add(place("spawn_" + key, loc, MapIcons.SPAWN, 20, title, "/spawn"));
                         }
                     });
                 }
@@ -169,10 +240,10 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
         }
     }
 
-    private static Marker<?> place(String key, NamedLocation loc, String icon, String title, String command) {
+    private static Marker<?> place(String key, NamedLocation loc, String icon, int size, String title, String command) {
         String popup = "<b>" + html(title) + "</b><br>" + html(command) + "<br>"
                 + (int) Math.floor(loc.x()) + ", " + (int) Math.floor(loc.y()) + ", " + (int) Math.floor(loc.z());
-        return Marker.icon(key, Point.of(loc.x(), loc.z()), icon, 20.0)
+        return Marker.icon(key, Point.of(loc.x(), loc.z()), icon, size)
                 .setOptions(Options.builder().tooltipContent(html(title)).popupContent(popup).build());
     }
 
@@ -211,7 +282,10 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
                     icon = MapIcons.MOB_OTHER;
                 }
                 var loc = mob.getLocation();
-                markers.add(Marker.icon("mob_" + mob.getUniqueId(), Point.of(loc.getX(), loc.getZ()), icon, 10.0)
+                String egg = "nucleus_egg_" + mob.getType().getKey().getKey();
+                boolean hasEgg = textureIcons.contains(egg);
+                markers.add(Marker.icon("mob_" + mob.getUniqueId(), Point.of(loc.getX(), loc.getZ()),
+                                hasEgg ? egg : icon, hasEgg ? MOB_SIZE : 10.0)
                         .setOptions(Options.builder().tooltipContent(html(mob.getName())).build()));
             }
             layer.update(markers);
