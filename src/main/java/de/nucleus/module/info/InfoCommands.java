@@ -114,6 +114,7 @@ final class InfoCommands {
         CommandKit.register(r, linesEditor(kit.root("motd", "nucleus.motd")
                         .executes(kit.run(ctx -> module.sendLines(sender(ctx), module.settings().motd()))),
                         "motd.lines", "/motd")
+                        .then(templateCommands())
                         .then(CommandKit.sub("onjoin", "nucleus.motd.edit")
                                 .then(word("value").suggests(CommandKit.suggest(ctx -> java.util.List.of("on", "off")))
                                         .executes(kit.run(ctx -> {
@@ -160,6 +161,67 @@ final class InfoCommands {
                 .then(CommandKit.sub("remove", perm).then(Commands.argument("line", IntegerArgumentType.integer(1))
                         .executes(kit.run(ctx -> editLines(ctx, path, label, lines -> lines.remove(line(ctx, lines) - 1))))))
                 .then(CommandKit.sub("clear", perm).executes(kit.run(ctx -> editLines(ctx, path, label, List::clear))));
+    }
+
+    /** /motd template list|save|use|delete: ganze MOTDs als Vorlage speichern und wechseln. */
+    private com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> templateCommands() {
+        String perm = "nucleus.motd.edit";
+        var names = CommandKit.suggest(ctx -> {
+            var sec = plugin.config("info").getConfigurationSection("motd.templates");
+            return sec == null ? List.of() : sec.getKeys(false);
+        });
+        return CommandKit.sub("template", perm)
+                .executes(kit.run(ctx -> listTemplates(sender(ctx))))
+                .then(CommandKit.sub("list", null).executes(kit.run(ctx -> listTemplates(sender(ctx)))))
+                .then(CommandKit.sub("save", null).then(word("name").suggests(names).executes(kit.run(ctx -> {
+                    String name = templateName(arg(ctx, "name"));
+                    List<String> lines = plugin.config("info").getStringList("motd.lines");
+                    plugin.config("info").set("motd.templates." + name, lines);
+                    plugin.moduleConfigs().save("info");
+                    plugin.messages().send(sender(ctx), "info.template-saved", "name", name, "count", lines.size());
+                }))))
+                .then(CommandKit.sub("use", null).then(word("name").suggests(names).executes(kit.run(ctx -> {
+                    String name = templateName(arg(ctx, "name"));
+                    if (!plugin.config("info").isList("motd.templates." + name)) {
+                        throw new CommandFail("info.template-unknown", "name", name);
+                    }
+                    List<String> lines = plugin.config("info").getStringList("motd.templates." + name);
+                    plugin.config("info").set("motd.lines", lines);
+                    plugin.moduleConfigs().save("info");
+                    module.reloadSettings();
+                    plugin.messages().send(sender(ctx), "info.template-used", "name", name);
+                    module.sendLines(sender(ctx), lines);
+                }))))
+                .then(CommandKit.sub("delete", null).then(word("name").suggests(names).executes(kit.run(ctx -> {
+                    String name = templateName(arg(ctx, "name"));
+                    if (!plugin.config("info").isList("motd.templates." + name)) {
+                        throw new CommandFail("info.template-unknown", "name", name);
+                    }
+                    plugin.config("info").set("motd.templates." + name, null);
+                    plugin.moduleConfigs().save("info");
+                    plugin.messages().send(sender(ctx), "info.template-deleted", "name", name);
+                }))));
+    }
+
+    private static String templateName(String input) {
+        if (!input.matches("[A-Za-z0-9_-]{1,32}")) {
+            throw new CommandFail("info.template-invalid");
+        }
+        return input.toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private void listTemplates(CommandSender sender) {
+        var sec = plugin.config("info").getConfigurationSection("motd.templates");
+        if (sec == null || sec.getKeys(false).isEmpty()) {
+            throw new CommandFail("info.template-none");
+        }
+        plugin.messages().send(sender, "info.template-header");
+        for (String name : sec.getKeys(false)) {
+            // Klick auf den Namen setzt die Vorlage ein
+            sender.sendMessage(plugin.messages().get("info.template-entry", "name", name,
+                    "count", sec.getStringList(name).size())
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/motd template use " + name)));
+        }
     }
 
     private static int line(CommandContext<CommandSourceStack> ctx, List<String> lines) {

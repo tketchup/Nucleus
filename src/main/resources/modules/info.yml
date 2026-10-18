@@ -10,6 +10,11 @@ motd:
   lines:
     - '<gray>Willkommen, <white><player></white>! Es sind <white><online>/<max></white> Spieler online.'
     - '<gray>Regeln: <aqua><click:run_command:/rules>/rules</click></aqua>'
+  # Gespeicherte MOTD-Vorlagen. Im Spiel: /motd template list|save|use|delete <name>
+  templates:
+    standard:
+      - '<gray>Willkommen, <white><player></white>! Es sind <white><online>/<max></white> Spieler online.'
+      - '<gray>Regeln: <aqua><click:run_command:/rules>/rules</click></aqua>'
 
 # /rules
 rules:

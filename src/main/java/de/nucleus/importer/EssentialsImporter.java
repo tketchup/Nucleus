@@ -235,6 +235,10 @@ public final class EssentialsImporter {
             }
             if (!current.isEmpty() && !isDefault) {
                 plugin.getLogger().info("Bisherige " + t[1] + " vor dem Import (zum Wiederherstellen): " + current);
+                if (t[0].equals("motd.lines")) {
+                    // als Vorlage sichern: zurück mit /motd template use vor-import
+                    info.set("motd.templates.vor-import", current);
+                }
             }
             info.set(t[0], lines);
             done.add(t[1] + " (" + lines.size() + " Zeilen)");

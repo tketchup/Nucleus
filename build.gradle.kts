@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "de.nucleus"
-version = "0.1.0"
+version = "1.0.0"
 description = "Schlanker, modularer EssentialsX-Ersatz für Paper 26.3"
 
 repositories {

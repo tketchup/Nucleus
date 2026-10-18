@@ -19,3 +19,6 @@ Thumbs.db
 
 # Lokale Claude-Einstellungen
 .claude/settings.local.json
+
+# Arbeitsanleitung für Claude (lokal, nicht im Repo)
+CLAUDE.md
