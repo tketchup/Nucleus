@@ -50,6 +50,14 @@ public final class NucleusPl3xMap extends JavaPlugin implements EventListener {
     public void onEnable() {
         saveDefaultConfig();
         nucleus = (NucleusPlugin) Bukkit.getPluginManager().getPlugin("Nucleus");
+        try {
+            de.nucleus.module.teleport.SpawnStore.class.getMethod("all");
+        } catch (NoSuchMethodException e) {
+            getLogger().severe("Nucleus " + nucleus.getPluginMeta().getVersion()
+                    + " ist zu alt, dieses Add-on braucht Nucleus 1.1.1 oder neuer.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         english = "en".equalsIgnoreCase(nucleus.getConfig().getString("language"));
 
         MapIcons.register();
