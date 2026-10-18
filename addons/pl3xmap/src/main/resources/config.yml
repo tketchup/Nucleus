@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus-Pl3xMap – Warps, Spawns und Mobs auf der Pl3xMap
+#  Änderungen gelten nach einem Neustart.
+# ─────────────────────────────────────────────────────────────
+
+# Warps aus Nucleus (Modul teleport)
+warps:
+  enabled: true
+  # Name der Ebene in der Karte ('' = je nach Nucleus-Sprache "Warps")
+  label: ''
+  # Ebene beim Öffnen der Karte ausgeblendet
+  default-hidden: false
+  # Diese Warps nicht auf der Karte zeigen (z. B. geheime Orte)
+  hidden: []
+
+# Spawnpunkte aus Nucleus (/setspawn). Den Vanilla-Weltspawn zeigt Pl3xMap selbst.
+spawns:
+  enabled: true
+  label: ''
+  default-hidden: false
+
+# Lebende Mobs (keine Spieler)
+mobs:
+  enabled: true
+  label: ''
+  default-hidden: false
+  # Wie oft die Positionen aktualisiert werden (Sekunden)
+  update-seconds: 5
+  # Höchstens so viele Mobs pro Welt (schützt Browser und Server bei großen Farmen)
+  max-per-world: 400
+  # Welche Arten gezeigt werden: feindlich (rot), friedlich (grün), sonstige wie Dorfbewohner (gelb)
+  hostile: true
+  passive: true
+  other: true

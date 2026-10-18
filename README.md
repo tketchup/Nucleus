@@ -40,6 +40,10 @@ Stammen die Daten von einem Server mit `online-mode=true`, Nucleus läuft aber m
 Spieler dort andere UUIDs. Dann `/nucleus import essentials offline` benutzen: die UUIDs werden über den
 Spielernamen umgerechnet.
 
+### Pl3xMap
+
+Das Add-on [Nucleus-Pl3xMap](addons/pl3xmap/README.md) zeigt Warps, Spawnpunkte und Mobs auf der Pl3xMap-Webkarte.
+
 ### VaultUnlocked
 
 Ist [VaultUnlocked](https://modrinth.com/project/vaultunlocked) installiert, meldet sich Nucleus automatisch als

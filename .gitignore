@@ -22,3 +22,6 @@ Thumbs.db
 
 # Arbeitsanleitung für Claude (lokal, nicht im Repo)
 CLAUDE.md
+
+# Pl3xMap-Jar zum Kompilieren des Add-ons (nicht im Repo, siehe addons/pl3xmap/README.md)
+addons/pl3xmap/libs/

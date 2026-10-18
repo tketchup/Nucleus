@@ -61,6 +61,11 @@ public final class SpawnStore {
         save();
     }
 
+    /** Alle gesetzten Spawns ("global" oder Weltname → Ort), nur lesen. Für Add-ons wie die Pl3xMap-Anbindung. */
+    public Map<String, NamedLocation> all() {
+        return java.util.Collections.unmodifiableMap(spawns);
+    }
+
     /** Noch gar kein Spawn gesetzt (für den Import: vorhandene Spawns nie überschreiben). */
     public boolean isEmpty() {
         return spawns.isEmpty();

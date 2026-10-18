@@ -1,0 +1,7 @@
+name: Nucleus-Pl3xMap
+version: '${version}'
+main: de.nucleus.addon.pl3xmap.NucleusPl3xMap
+description: '${description}'
+api-version: '26.3'
+author: lukas
+depend: [Nucleus, Pl3xMap]
