@@ -48,16 +48,26 @@ public final class CoreCommands {
                     }
                 })));
         // /nucleus import essentials [ordner]: Ordner relativ zum Serververzeichnis, Standard plugins/Essentials
+        // offline: UUIDs über den Namen umrechnen (Daten vom Online-Server, Nucleus läuft offline)
         root.then(sub("import", ADMIN).then(CommandKit.sub("essentials", null)
-                .executes(kit.run(ctx -> plugin.essentialsImporter().run(sender(ctx),
-                        plugin.essentialsImporter().defaultFolder())))
-                .then(CommandKit.greedy("folder").executes(kit.run(ctx -> {
-                    java.io.File folder = new java.io.File(CommandKit.arg(ctx, "folder"));
-                    if (!folder.isAbsolute()) {
-                        folder = new java.io.File(plugin.getServer().getWorldContainer(), folder.getPath());
-                    }
-                    plugin.essentialsImporter().run(sender(ctx), folder);
-                })))));
+                .executes(kit.run(ctx -> runImport(ctx, false, null)))
+                .then(CommandKit.sub("offline", null)
+                        .executes(kit.run(ctx -> runImport(ctx, true, null)))
+                        .then(CommandKit.greedy("folder").executes(kit.run(ctx -> runImport(ctx, true, CommandKit.arg(ctx, "folder"))))))
+                .then(CommandKit.greedy("folder").executes(kit.run(ctx -> runImport(ctx, false, CommandKit.arg(ctx, "folder")))))));
         CommandKit.register(registrar, root, "Nucleus: Info, Neuladen und Modulstatus", "nuc");
+    }
+
+    /** Ordner relativ zum Serververzeichnis, ohne Angabe plugins/Essentials. */
+    private void runImport(com.mojang.brigadier.context.CommandContext<io.papermc.paper.command.brigadier.CommandSourceStack> ctx,
+                           boolean offline, String path) {
+        java.io.File folder = plugin.essentialsImporter().defaultFolder();
+        if (path != null) {
+            folder = new java.io.File(path);
+            if (!folder.isAbsolute()) {
+                folder = new java.io.File(plugin.getServer().getWorldContainer(), folder.getPath());
+            }
+        }
+        plugin.essentialsImporter().run(sender(ctx), folder, offline);
     }
 }

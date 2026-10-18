@@ -131,4 +131,23 @@ class EssentialsDataTest {
         assertNull(EssentialsData.cleanName("!!!"));
         assertEquals(32, EssentialsData.cleanName("a".repeat(50)).length());
     }
+
+    @Test
+    void computesOfflineModeUuids() {
+        // Werte vom Testserver (online-mode=false)
+        assertEquals(UUID.fromString("e37a0e35-ffe9-35bc-9fe5-2a43664ea080"), EssentialsData.offlineUuid("ketc_hup"));
+        assertEquals(UUID.fromString("558aeee0-0ccf-375a-b96e-dffcf806e9c9"), EssentialsData.offlineUuid("Mindofvivi04"));
+    }
+
+    @Test
+    void remapsUserAndIgnoreList() {
+        UUID offline = UUID.randomUUID();
+        UUID friendOffline = UUID.randomUUID();
+        EssentialsData.User u = EssentialsData.parseUser(ID, yaml(USER));
+        EssentialsData.User mapped = EssentialsData.withUuid(u, offline, Map.of(FRIEND, friendOffline));
+        assertEquals(offline, mapped.uuid());
+        assertEquals(java.util.List.of(friendOffline), mapped.ignored());
+        assertEquals(u.homes(), mapped.homes());
+        assertTrue(EssentialsData.withUuid(u, offline, Map.of()).ignored().isEmpty(), "ohne Zuordnung weglassen");
+    }
 }

@@ -44,6 +44,10 @@ import java.util.logging.Level;
  * ein vorhandener Spawn bleibt, Kontostände werden nur übernommen, solange das Nucleus-Konto noch
  * fehlt oder auf dem Startguthaben steht. Man kann den Import also gefahrlos wiederholen.
  *
+ * <p>Mit {@code offline} werden die UUIDs über den Spielernamen in Offline-UUIDs umgerechnet: für Daten
+ * von einem Online-Server, wenn Nucleus mit online-mode=false läuft. Spieler ohne gespeicherten Namen
+ * lassen sich dann nicht zuordnen und werden übersprungen.
+ *
  * <p>Gelesen wird im IO-Thread (sicheres YAML-Laden ohne Objekt-Erzeugung), angewendet auf dem Hauptthread.
  */
 public final class EssentialsImporter {
@@ -51,7 +55,7 @@ public final class EssentialsImporter {
     /** Alles, was aus dem Essentials-Ordner gelesen wurde. */
     private record Snapshot(List<EssentialsData.User> users, Map<String, EssentialsData.Loc> warps,
                             Map<String, EssentialsData.Loc> jails, Map<String, EssentialsData.Loc> spawns,
-                            int brokenFiles) {
+                            int brokenFiles, int unmapped) {
     }
 
     /** Zähler für den Abschlussbericht. */
@@ -82,7 +86,7 @@ public final class EssentialsImporter {
         return new File(plugin.getDataFolder().getParentFile(), "Essentials");
     }
 
-    public void run(CommandSender sender, File folder) {
+    public void run(CommandSender sender, File folder, boolean offlineUuids) {
         if (running) {
             plugin.messages().send(sender, "core.import-running");
             return;
@@ -93,7 +97,10 @@ public final class EssentialsImporter {
         }
         running = true;
         plugin.messages().send(sender, "core.import-started", "folder", folder.getPath());
-        plugin.io().supply(() -> read(folder)).whenComplete((snapshot, error) -> plugin.sync(() -> {
+        if (offlineUuids) {
+            plugin.messages().send(sender, "core.import-offline");
+        }
+        plugin.io().supply(() -> read(folder, offlineUuids)).whenComplete((snapshot, error) -> plugin.sync(() -> {
             if (error != null) {
                 running = false;
                 plugin.getLogger().log(Level.SEVERE, "EssentialsX-Import fehlgeschlagen", error);
@@ -106,7 +113,7 @@ public final class EssentialsImporter {
 
     // --- Lesen (IO-Thread) ---
 
-    private Snapshot read(File folder) {
+    private Snapshot read(File folder, boolean offlineUuids) {
         // SafeConstructor: nur Maps, Listen und einfache Werte, keine Java-Objekte aus fremden Dateien
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         int[] broken = {0};
@@ -139,12 +146,32 @@ public final class EssentialsImporter {
                 }
             }
         }
+        int unmapped = 0;
+        if (offlineUuids) {
+            // Erst die Zuordnung alt → neu für alle, damit auch Ignorierlisten umgerechnet werden können
+            Map<UUID, UUID> mapping = new java.util.HashMap<>();
+            for (EssentialsData.User u : users) {
+                if (u.name() != null) {
+                    mapping.put(u.uuid(), EssentialsData.offlineUuid(u.name()));
+                }
+            }
+            List<EssentialsData.User> mapped = new ArrayList<>();
+            for (EssentialsData.User u : users) {
+                UUID target = mapping.get(u.uuid());
+                if (target == null) {
+                    unmapped++;
+                } else {
+                    mapped.add(EssentialsData.withUuid(u, target, mapping));
+                }
+            }
+            users = mapped;
+        }
         Map<?, ?> jailFile = load(yaml, new File(folder, "jail.yml"), broken);
         Map<?, ?> spawnFile = load(yaml, new File(folder, "spawn.yml"), broken);
         return new Snapshot(users, warps,
                 EssentialsData.parseLocationSection(jailFile == null ? null : jailFile.get("jails")),
                 EssentialsData.parseLocationSection(spawnFile == null ? null : spawnFile.get("spawns")),
-                broken[0]);
+                broken[0], unmapped);
     }
 
     private @Nullable Map<?, ?> load(Yaml yaml, File file, int[] broken) {
@@ -165,6 +192,7 @@ public final class EssentialsImporter {
 
     private void apply(CommandSender sender, Snapshot data) {
         Report report = new Report();
+        report.skipped += data.unmapped();
         TeleportModule teleport = plugin.modules().get("teleport", TeleportModule.class);
         ModerationModule moderation = plugin.modules().get("moderation", ModerationModule.class);
 
@@ -221,7 +249,8 @@ public final class EssentialsImporter {
 
     /** Kontostand nur, wenn Nucleus noch kein eigenes Guthaben für den Spieler hat. */
     private void importMoney(@Nullable EconomyService eco, EssentialsData.User user, Report report) {
-        if (eco == null || user.money() == null) {
+        // 0 bringt nichts: dann behält der Spieler einfach das Nucleus-Startguthaben
+        if (eco == null || user.money() == null || user.money().signum() == 0) {
             return;
         }
         if (eco.hasAccount(user.uuid()) && eco.balance(user.uuid()) != eco.startingBalance()) {

@@ -36,6 +36,10 @@ Komplett neu geschrieben (Clean-Room, kein Code und keine Texte aus EssentialsX)
 Nicknames, `/back`-Positionen, Ignorierlisten und Mutes. Es wird nur ergänzt, nie überschrieben; der Import
 kann gefahrlos wiederholt werden.
 
+Stammen die Daten von einem Server mit `online-mode=true`, Nucleus läuft aber mit `online-mode=false`, haben die
+Spieler dort andere UUIDs. Dann `/nucleus import essentials offline` benutzen: die UUIDs werden über den
+Spielernamen umgerechnet.
+
 ### VaultUnlocked
 
 Ist [VaultUnlocked](https://modrinth.com/project/vaultunlocked) installiert, meldet sich Nucleus automatisch als

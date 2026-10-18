@@ -109,6 +109,27 @@ public final class EssentialsData {
     }
 
     /**
+     * UUID, die ein Server mit online-mode=false für diesen Namen vergibt (namensbasiert, Version 3).
+     * Nötig, wenn die Essentials-Daten von einem Online-Server stammen, Nucleus aber offline läuft.
+     */
+    public static UUID offlineUuid(String name) {
+        return UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    /** Derselbe Spieler unter einer anderen UUID (Ignorierliste über die Zuordnung mit umgerechnet). */
+    public static User withUuid(User u, UUID uuid, Map<UUID, UUID> mapping) {
+        List<UUID> ignored = new ArrayList<>();
+        for (UUID id : u.ignored()) {
+            UUID mapped = mapping.get(id);
+            if (mapped != null) {
+                ignored.add(mapped); // unbekannte Spieler lassen sich ohne Namen nicht umrechnen
+            }
+        }
+        return new User(uuid, u.name(), u.money(), u.homes(), u.nickname(), u.lastLocation(), ignored,
+                u.muted(), u.muteUntil(), u.muteReason(), u.socialSpy(), u.teleportEnabled(), u.lastLogout());
+    }
+
+    /**
      * Namen für Nucleus passend machen: erlaubt sind Buchstaben, Ziffern, _ und -, höchstens 32 Zeichen.
      * Alles andere wird zu "_". Leere Namen ergeben null.
      */

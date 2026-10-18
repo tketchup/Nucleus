@@ -65,7 +65,8 @@ public final class NucleusPlugin extends JavaPlugin {
         // Hinweis, wenn alte EssentialsX-Daten herumliegen und noch nicht übernommen wurden
         if (essentialsImporter.defaultFolder().isDirectory()
                 && !new java.io.File(getDataFolder(), de.nucleus.importer.EssentialsImporter.MARKER).exists()) {
-            getLogger().info("EssentialsX-Daten gefunden. Übernehmen mit: /nucleus import essentials");
+            getLogger().info("EssentialsX-Daten gefunden. Übernehmen mit: /nucleus import essentials"
+                    + (getServer().getOnlineMode() ? "" : " (Daten von einem Online-Server: /nucleus import essentials offline)"));
         }
 
         getLogger().info("Nucleus " + getPluginMeta().getVersion() + " aktiviert.");

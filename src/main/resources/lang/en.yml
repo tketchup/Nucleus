@@ -58,6 +58,7 @@ core:
   reloaded: '<prefix>Configuration, messages and modules reloaded.'
   restart-needed: '<prefix>Modules were enabled or disabled. Commands only adjust after a restart (or /minecraft:reload).'
   import-started: '<prefix>EssentialsX import from <hl><folder></hl> running …'
+  import-offline: '<prefix>UUIDs are converted to offline UUIDs using the player name (online-mode=false).'
   import-running: '<prefix><err>An import is already running.'
   import-no-folder: '<prefix><err>No EssentialsX folder found: <hl><folder></hl> (expected userdata/ or warps/).'
   import-done: '<prefix>EssentialsX import done: <hl><players></hl> players, <hl><homes></hl> homes (<homes_skipped> already existed), <hl><warps></hl> warps, <hl><jails></hl> jails, <hl><spawns></hl> spawn, <hl><balances></hl> balances, <hl><nicks></hl> nicknames, <hl><mutes></hl> mutes. Skipped: <skipped>, unreadable files: <broken>.'
