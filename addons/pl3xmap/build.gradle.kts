@@ -3,7 +3,8 @@ plugins {
 }
 
 group = "de.nucleus"
-version = rootProject.version
+// Eigene Versionsnummer, unabhängig von Nucleus
+version = "1.0.0"
 description = "Zeigt Nucleus-Warps, -Spawns und Mobs auf der Pl3xMap"
 
 repositories {
