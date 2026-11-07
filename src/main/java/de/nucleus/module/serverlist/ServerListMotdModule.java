@@ -37,7 +37,7 @@ public final class ServerListMotdModule implements Module {
     private static final int FIT_ATTEMPTS = 25;
 
     record Settings(String line1, TextColor playerColor, String baseColor, boolean center, int maxWidth,
-                    List<String> messages, boolean whitelistNames, List<String> extraNames) {
+                    List<String> messages, boolean whitelistNames, List<String> extraNames, int extraChance) {
 
         static Settings load(FileConfiguration c, Logger log) {
             String base = Configs.string(c, "base-color").strip();
@@ -71,7 +71,8 @@ public final class ServerListMotdModule implements Module {
                 }
             }
             return new Settings(line1, playerColor, base, c.getBoolean("center"), Math.max(0, c.getInt("max-width")),
-                    List.copyOf(messages), c.getBoolean("names.whitelist"), List.copyOf(extra));
+                    List.copyOf(messages), c.getBoolean("names.whitelist"), List.copyOf(extra),
+                    Math.clamp(c.getInt("names.extra-chance"), 0, 100));
         }
 
         private static boolean parses(String template, Logger log, String what) {
@@ -90,7 +91,7 @@ public final class ServerListMotdModule implements Module {
     private final NucleusPlugin plugin;
     private final ModuleScope scope;
     private volatile Settings settings;
-    /** Namen von der Whitelist und aus names.extra. Volatile: der Ping kommt nicht vom Hauptthread. */
+    /** Namen von der Whitelist. Volatile: der Ping kommt nicht vom Hauptthread. */
     private volatile List<String> names = List.of();
     private final String version = Bukkit.getMinecraftVersion();
 
@@ -124,23 +125,36 @@ public final class ServerListMotdModule implements Module {
         refreshNames();
     }
 
-    /**
-     * Hauptthread: Namen von der Whitelist (Einträge ohne bekannten Namen fallen weg) und die zusätzlichen
-     * Namen aus der Config zusammenführen, ohne doppelte.
-     */
+    /** Hauptthread: Namen von der Whitelist übernehmen (Einträge ohne bekannten Namen fallen weg). */
     private void refreshNames() {
-        Settings s = settings;
-        java.util.Map<String, String> unique = new java.util.LinkedHashMap<>();
-        if (s.whitelistNames()) {
+        List<String> list = new ArrayList<>();
+        if (settings.whitelistNames()) {
             for (OfflinePlayer p : Bukkit.getWhitelistedPlayers()) {
                 String name = p.getName();
                 if (name != null) {
-                    unique.putIfAbsent(name.toLowerCase(java.util.Locale.ROOT), name);
+                    list.add(name);
                 }
             }
         }
-        s.extraNames().forEach(n -> unique.putIfAbsent(n.toLowerCase(java.util.Locale.ROOT), n));
-        names = List.copyOf(unique.values());
+        names = List.copyOf(list);
+    }
+
+    /**
+     * Zufälliger Name: mit names.extra-chance Prozent aus names.extra, sonst von der Whitelist. Ist eine der
+     * beiden Listen leer, kommt der Name immer aus der anderen.
+     */
+    private static String randomName(Settings s, List<String> whitelist, ThreadLocalRandom random) {
+        List<String> extra = s.extraNames();
+        boolean useExtra;
+        if (whitelist.isEmpty()) {
+            useExtra = true;
+        } else if (extra.isEmpty()) {
+            useExtra = false;
+        } else {
+            useExtra = random.nextInt(100) < s.extraChance();
+        }
+        List<String> pool = useExtra ? extra : whitelist;
+        return pool.isEmpty() ? FALLBACK_NAME : pool.get(random.nextInt(pool.size()));
     }
 
     /**
@@ -166,7 +180,7 @@ public final class ServerListMotdModule implements Module {
         Component best = null;
         int bestWidth = Integer.MAX_VALUE;
         for (int i = 0; i < FIT_ATTEMPTS; i++) {
-            String name = pool.isEmpty() ? FALLBACK_NAME : pool.get(random.nextInt(pool.size()));
+            String name = randomName(s, pool, random);
             String message = s.messages().get(random.nextInt(s.messages().size()));
             // Spielername in eigener Farbe; danach gilt wieder die Grundfarbe der Zeile
             Component line = MM.deserialize(s.baseColor() + toTags(message),

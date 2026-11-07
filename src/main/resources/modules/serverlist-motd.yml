@@ -24,6 +24,8 @@ max-width: 250
 names:
   # Spieler von der Whitelist
   whitelist: true
+  # Wie oft (in Prozent) ein Name aus extra statt von der Whitelist kommt
+  extra-chance: 20
   # Zusätzliche Namen, die zufällig mit auftauchen
   extra:
     - Gronkh
