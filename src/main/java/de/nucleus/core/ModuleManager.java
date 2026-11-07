@@ -35,6 +35,7 @@ public final class ModuleManager {
         KNOWN.put("moderation", "de.nucleus.module.moderation.ModerationModule");
         KNOWN.put("gameplay", "de.nucleus.module.gameplay.GameplayModule");
         KNOWN.put("lock", "de.nucleus.module.lock.LockModule");
+        KNOWN.put("serverlist-motd", "de.nucleus.module.serverlist.ServerListMotdModule");
     }
 
     private final NucleusPlugin plugin;

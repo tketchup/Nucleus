@@ -1,0 +1,46 @@
+# ─────────────────────────────────────────────────────────────
+#  Nucleus – Modul serverlist-motd (MOTD in der Serverliste)
+#  An/aus in config.yml unter modules. Änderungen: /nucleus reload
+#  Zeile 1: fester Text, Zeile 2: bei jedem Ping eine zufällige (erfundene) Meldung
+#  über einen Spieler von der Whitelist. Texte in MiniMessage, z. B. <gold>, <#2ee59d>, <gradient:a:b>.
+# ─────────────────────────────────────────────────────────────
+
+# Erste Zeile. {version} = Minecraft-Version des Servers (z. B. 26.3)
+line1: '<gradient:#2ee59d:#12b5ff>ketchby.me</gradient> <dark_gray>»</dark_gray> <white>Survival</white> <dark_gray>[<green>{version}</green>]</dark_gray>'
+
+# Farbe des Spielernamens in Zeile 2 (Hex wie '#ffd166' oder Name wie 'gold')
+player-color: '#ffd166'
+
+# Grundfarbe von Zeile 2 (MiniMessage-Tag)
+base-color: '<#9aa5b1>'
+
+# Beide Zeilen mit vorangestellten Leerzeichen mittig ausrichten
+center: true
+# Breite der Serverliste in Pixeln, auf die zentriert wird
+max-width: 250
+
+# Meldungen für Zeile 2, eine davon zufällig bei jedem Ping. {player} = zufälliger Name von der
+# Whitelist (leere Whitelist: "Jemand"). Meldungen ohne {player} gehen auch.
+# Leere Liste: die normale MOTD aus server.properties bleibt.
+messages:
+  - '{player} wurde von einem Creeper überrascht'
+  - '{player} hat gerade einen Diamanten gefunden'
+  - '{player} ist in Lava gefallen. Schon wieder.'
+  - '{player} baut heimlich was Riesiges'
+  - '{player} wurde von einem Skelett erschossen'
+  - '{player} hat die Netherite-Rüstung verloren'
+  - '{player} hat sich im Wald verlaufen'
+  - '{player} ist vom Himmel gefallen'
+  - '{player} hat dein Haus gesehen und ist neidisch'
+  - '{player} wurde von einem Dorfbewohner ausgetrickst'
+  - '{player} streamt gerade Redstone-Fails'
+  - '{player} hat den Enderdrachen besiegt (Lüge)'
+  - '{player} hat 64 Erde gegen einen Smaragd getauscht'
+  - '{player} sucht seit drei Stunden ein Dorf'
+  - '{player} hat aus Versehen den Hund geschlagen'
+  - '{player} wurde vom Phantom geweckt'
+  - '{player} hat den Warden gestreichelt. Mutig.'
+  - 'Heute Nacht wird es gefährlich'
+  - 'Die Creeper haben ein Treffen einberufen'
+  - 'Irgendwo ist ein Enderman sauer'
+  - 'Gerüchten zufolge gibt es hier Diamanten'

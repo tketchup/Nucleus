@@ -21,6 +21,7 @@ Komplett neu geschrieben (Clean-Room, kein Code und keine Texte aus EssentialsX)
 | `economy` | Konten in Cent (keine Rundungsfehler), `/pay`, `/baltop`, `/eco`, öffentliche `EconomyService`-API, VaultUnlocked-Anbindung |
 | `moderation` | Kick, Ban, Tempban, IP-Ban, Mute, Freeze, Jail, Vanish, Invsee, Enderchest, Sudo, CommandSpy, `moderation.log` |
 | `gameplay` | Gamemode, Fly, God, Heal, Feed, Speed, Zeit/Wetter, Items, Enchant, Lore, Köpfe, Powertools, tragbare Werkbänke |
+| `serverlist-motd` | Zweizeilige MOTD in der Serverliste: Servername mit Version und bei jedem Ping eine zufällige (erfundene) Meldung über einen Whitelist-Spieler (standardmäßig aus) |
 | `lock` | Truhen und andere Behälter mit `/lock` sichern, optional mit Passwort (Dialog, nur als Hash gespeichert) |
 
 ## Installation

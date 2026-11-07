@@ -19,6 +19,8 @@ modules:
   gameplay: true
   # Truhen und andere Behälter mit /lock sichern (optional mit Passwort)
   lock: true
+  # Zweizeilige MOTD in der Serverliste mit zufälliger Meldung über einen Whitelist-Spieler
+  serverlist-motd: false
 
 # Sprache aller Texte: de (Deutsch) oder en (English). Texte liegen in lang/de.yml und lang/en.yml.
 # Umschalten mit /nucleus reload; Beschreibungen in /help nach Neustart oder /minecraft:reload.
