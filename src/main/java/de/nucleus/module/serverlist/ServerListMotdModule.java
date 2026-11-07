@@ -33,8 +33,11 @@ public final class ServerListMotdModule implements Module {
     private static final String FALLBACK_NAME = "Jemand";
     private static final MiniMessage MM = MiniMessage.miniMessage();
 
+    /** Versuche pro Ping, eine Kombination aus Name und Meldung zu finden, die in die Zeile passt. */
+    private static final int FIT_ATTEMPTS = 25;
+
     record Settings(String line1, TextColor playerColor, String baseColor, boolean center, int maxWidth,
-                    List<String> messages) {
+                    List<String> messages, boolean whitelistNames, List<String> extraNames) {
 
         static Settings load(FileConfiguration c, Logger log) {
             String base = Configs.string(c, "base-color").strip();
@@ -61,8 +64,14 @@ public final class ServerListMotdModule implements Module {
             if (!parses(toTags(line1), log, "line1")) {
                 line1 = "";
             }
+            List<String> extra = new ArrayList<>();
+            for (String n : c.getStringList("names.extra")) {
+                if (n != null && !n.isBlank()) {
+                    extra.add(n.strip());
+                }
+            }
             return new Settings(line1, playerColor, base, c.getBoolean("center"), Math.max(0, c.getInt("max-width")),
-                    List.copyOf(messages));
+                    List.copyOf(messages), c.getBoolean("names.whitelist"), List.copyOf(extra));
         }
 
         private static boolean parses(String template, Logger log, String what) {
@@ -81,7 +90,7 @@ public final class ServerListMotdModule implements Module {
     private final NucleusPlugin plugin;
     private final ModuleScope scope;
     private volatile Settings settings;
-    /** Namen von der Whitelist. Volatile: der Ping kommt nicht vom Hauptthread. */
+    /** Namen von der Whitelist und aus names.extra. Volatile: der Ping kommt nicht vom Hauptthread. */
     private volatile List<String> names = List.of();
     private final String version = Bukkit.getMinecraftVersion();
 
@@ -112,18 +121,26 @@ public final class ServerListMotdModule implements Module {
     @Override
     public void reloadSettings() {
         settings = Settings.load(plugin.config("serverlist-motd"), plugin.getLogger());
+        refreshNames();
     }
 
-    /** Hauptthread: Namen von der Whitelist übernehmen (Einträge ohne bekannten Namen fallen weg). */
+    /**
+     * Hauptthread: Namen von der Whitelist (Einträge ohne bekannten Namen fallen weg) und die zusätzlichen
+     * Namen aus der Config zusammenführen, ohne doppelte.
+     */
     private void refreshNames() {
-        List<String> list = new ArrayList<>();
-        for (OfflinePlayer p : Bukkit.getWhitelistedPlayers()) {
-            String name = p.getName();
-            if (name != null) {
-                list.add(name);
+        Settings s = settings;
+        java.util.Map<String, String> unique = new java.util.LinkedHashMap<>();
+        if (s.whitelistNames()) {
+            for (OfflinePlayer p : Bukkit.getWhitelistedPlayers()) {
+                String name = p.getName();
+                if (name != null) {
+                    unique.putIfAbsent(name.toLowerCase(java.util.Locale.ROOT), name);
+                }
             }
         }
-        names = List.copyOf(list);
+        s.extraNames().forEach(n -> unique.putIfAbsent(n.toLowerCase(java.util.Locale.ROOT), n));
+        names = List.copyOf(unique.values());
     }
 
     /**
@@ -135,16 +152,35 @@ public final class ServerListMotdModule implements Module {
         if (s.messages().isEmpty()) {
             return null;
         }
+        Component line1 = MM.deserialize(toTags(s.line1()), Placeholder.unparsed("version", version));
+        return centered(line1, s).append(Component.newline()).append(centered(randomLine2(s), s));
+    }
+
+    /**
+     * Zufällige Meldung mit zufälligem Namen. Zu lange Zeilen schneidet der Client ab, deshalb wird eine
+     * Kombination gesucht, die in max-width passt; klappt das nicht, gewinnt die kürzeste gefundene.
+     */
+    private Component randomLine2(Settings s) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         List<String> pool = names;
-        String name = pool.isEmpty() ? FALLBACK_NAME : pool.get(random.nextInt(pool.size()));
-        String message = s.messages().get(random.nextInt(s.messages().size()));
-
-        Component line1 = MM.deserialize(toTags(s.line1()), Placeholder.unparsed("version", version));
-        // Spielername in eigener Farbe; danach gilt wieder die Grundfarbe der Zeile
-        Component line2 = MM.deserialize(s.baseColor() + toTags(message),
-                Placeholder.component("player", Component.text(name, s.playerColor())));
-        return centered(line1, s).append(Component.newline()).append(centered(line2, s));
+        Component best = null;
+        int bestWidth = Integer.MAX_VALUE;
+        for (int i = 0; i < FIT_ATTEMPTS; i++) {
+            String name = pool.isEmpty() ? FALLBACK_NAME : pool.get(random.nextInt(pool.size()));
+            String message = s.messages().get(random.nextInt(s.messages().size()));
+            // Spielername in eigener Farbe; danach gilt wieder die Grundfarbe der Zeile
+            Component line = MM.deserialize(s.baseColor() + toTags(message),
+                    Placeholder.component("player", Component.text(name, s.playerColor())));
+            int width = MotdCentering.width(PlainTextComponentSerializer.plainText().serialize(line));
+            if (s.maxWidth() <= 0 || width <= s.maxWidth()) {
+                return line;
+            }
+            if (width < bestWidth) {
+                best = line;
+                bestWidth = width;
+            }
+        }
+        return best;
     }
 
     private static Component centered(Component line, Settings s) {

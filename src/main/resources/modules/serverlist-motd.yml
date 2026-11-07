@@ -16,31 +16,94 @@ base-color: '<#9aa5b1>'
 
 # Beide Zeilen mit vorangestellten Leerzeichen mittig ausrichten
 center: true
-# Breite der Serverliste in Pixeln, auf die zentriert wird
+# Breite der Serverliste in Pixeln: darauf wird zentriert, und längere Zeilen (schneidet der Client ab)
+# werden vermieden, indem eine andere Kombination aus Name und Meldung gewählt wird. 0 = egal.
 max-width: 250
 
-# Meldungen für Zeile 2, eine davon zufällig bei jedem Ping. {player} = zufälliger Name von der
-# Whitelist (leere Whitelist: "Jemand"). Meldungen ohne {player} gehen auch.
+# Woher die Namen für {player} kommen
+names:
+  # Spieler von der Whitelist
+  whitelist: true
+  # Zusätzliche Namen, die zufällig mit auftauchen
+  extra:
+    - Gronkh
+    - Paluten
+    - BastiGHG
+    - GermanLetsPlay
+    - Zombey
+    - Maudado
+    - Rewinside
+    - Dner
+    - Sturmwaffel
+    - Unge
+
+# Meldungen für Zeile 2, eine davon zufällig bei jedem Ping. {player} = zufälliger Name (Whitelist und
+# names.extra; ohne Namen: "Jemand"). Meldungen ohne {player} gehen auch. Kurz halten: der Client zeigt nur
+# etwa 250 Pixel, das sind rund 40 Zeichen samt Name.
 # Leere Liste: die normale MOTD aus server.properties bleibt.
 messages:
-  - '{player} wurde von einem Creeper überrascht'
-  - '{player} hat gerade einen Diamanten gefunden'
-  - '{player} ist in Lava gefallen. Schon wieder.'
-  - '{player} baut heimlich was Riesiges'
-  - '{player} wurde von einem Skelett erschossen'
-  - '{player} hat die Netherite-Rüstung verloren'
-  - '{player} hat sich im Wald verlaufen'
+  # Todesursachen
+  - '{player} wurde vom Creeper überrascht'
+  - '{player} fiel in Lava. Schon wieder.'
+  - '{player} wurde vom Skelett erschossen'
   - '{player} ist vom Himmel gefallen'
-  - '{player} hat dein Haus gesehen und ist neidisch'
-  - '{player} wurde von einem Dorfbewohner ausgetrickst'
+  - '{player} hat den Kaktus umarmt'
+  - '{player} wollte in Lava baden'
+  - '{player} ist im Kuhstall ertrunken'
+  - '{player} wurde von Bienen erledigt'
+  - '{player} fiel aus der Welt'
+  - '{player} hat im Nether geschlafen'
+  - '{player} hat TNT unterschätzt'
+  - '{player} wurde vom Blitz getroffen'
+  - '{player} erfror im Pulverschnee'
+  - '{player} wurde vom Warden gefunden'
+  - '{player} hat Piglins kein Gold gegeben'
+  - '{player} wurde von Ziegen geschubst'
+  - '{player} hat die Fallhöhe unterschätzt'
+  - '{player} lief rückwärts in einen Creeper'
+  - '{player} verhungerte neben 64 Steaks'
+  - '{player} hat mit Phantomen gekuschelt'
+  - '{player} wurde vom Ghast ausgelacht'
+  - '{player} hat Wither-Rosen gepflückt'
+  - '{player} wurde von einer Hexe verflucht'
+  - '{player} hat Kies von unten abgebaut'
+  # Sonstiges
+  - '{player} hat gerade Diamanten gefunden'
+  - '{player} baut heimlich was Riesiges'
+  - '{player} verlor die Netherite-Rüstung'
+  - '{player} hat sich im Wald verlaufen'
+  - '{player} ist neidisch auf dein Haus'
+  - '{player} wurde vom Händler abgezockt'
   - '{player} streamt gerade Redstone-Fails'
-  - '{player} hat den Enderdrachen besiegt (Lüge)'
-  - '{player} hat 64 Erde gegen einen Smaragd getauscht'
-  - '{player} sucht seit drei Stunden ein Dorf'
-  - '{player} hat aus Versehen den Hund geschlagen'
+  - '{player} besiegte den Drachen (Lüge)'
+  - '{player} tauscht Erde gegen Smaragde'
+  - '{player} sucht seit Stunden ein Dorf'
   - '{player} wurde vom Phantom geweckt'
-  - '{player} hat den Warden gestreichelt. Mutig.'
+  - '{player} hat den Warden gestreichelt'
+  - '{player} hat das Bett vergessen'
+  - '{player} isst rohes Hühnchen'
+  - '{player} baut wieder eine Erdhütte'
+  - '{player} gräbt direkt nach unten'
+  - '{player} hat die Elytra verlegt'
+  - '{player} sammelt Blumen. 300 Stück.'
+  - '{player} hat Angst vor Hühnern'
+  - '{player} redet mit Dorfbewohnern'
+  - '{player} war AFK. Im Nether.'
+  - '{player} hat den Spawn geflutet'
+  - '{player} hat 1000 Hühner. Hilfe.'
+  - '{player} verkauft Sand in der Wüste'
+  - '{player} hat Redstone erfunden'
+  - '{player} hat ein Schwert mit Glück I'
+  - '{player} hat die Katze adoptiert'
+  - '{player} sucht Netherite mit Holzhacke'
+  - '{player} hat einen Creeper benannt'
+  - '{player} reitet ein Schwein. Stolz.'
+  # Ohne Spieler
   - 'Heute Nacht wird es gefährlich'
-  - 'Die Creeper haben ein Treffen einberufen'
+  - 'Die Creeper halten ein Treffen ab'
   - 'Irgendwo ist ein Enderman sauer'
-  - 'Gerüchten zufolge gibt es hier Diamanten'
+  - 'Gerüchten zufolge gibt es Diamanten'
+  - 'Die Hühner planen etwas'
+  - 'Der Warden hat schlechte Laune'
+  - 'Es riecht nach Schwefel'
+  - 'Die Dorfbewohner erhöhen die Preise'
